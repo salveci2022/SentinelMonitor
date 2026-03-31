@@ -1,0 +1,8 @@
+flask
+pyautogui
+sounddevice
+soundfile
+pynput
+requests
+numpy
+reportlab
