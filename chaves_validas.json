@@ -1,0 +1,12 @@
+[
+  {
+    "chave": "SPYNET-MASTER-2026-VIP",
+    "cliente": "MASTER",
+    "tipo": "VITALICIA",
+    "dias": 9999,
+    "criado_em": "02/04/2026 16:43:48",
+    "expiracao": "31/12/2099",
+    "expiracao_timestamp": 4102444800,
+    "ativa": true
+  }
+]

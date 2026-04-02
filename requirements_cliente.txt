@@ -1,0 +1,6 @@
+pyautogui
+sounddevice
+soundfile
+pynput
+requests
+numpy
