@@ -1,6 +1,6 @@
 """
-SPYNET OSINT ULTIMATE — SISTEMA ESTILO FBI / AGÊNCIA DE INTELIGÊNCIA
-Design: Dark Mode + Neon Blue + Interface Tática
+SPYNET OSINT ULTIMATE — SISTEMA COMPLETO ESTILO FBI
+Funcionalidades: OSINT + Monitoramento + Licenciamento + PDF
 """
 
 from flask import Flask, render_template_string, request, jsonify, send_file, session, redirect, url_for
@@ -406,17 +406,19 @@ def index():
         return redirect(url_for("login"))
     return redirect(url_for("painel"))
 
-@app.route("/login", methods=["GET","POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     valido, _ = verificar_licenca()
     if not valido:
         return redirect(url_for("ativar"))
     erro = ""
     if request.method == "POST":
-        if request.form.get("senha") == SISTEMA_SENHA:
+        senha = request.form.get("senha")
+        if senha == SISTEMA_SENHA:
             session["logado"] = True
             return redirect(url_for("painel"))
-        erro = "ACESSO NEGADO"
+        else:
+            erro = "Senha incorreta!"
     return render_template_string(LOGIN_HTML, erro=erro)
 
 @app.route("/logout")
@@ -833,7 +835,7 @@ def gerar_relatorio(caso_id):
     return send_file(buffer, as_attachment=True, download_name=nome, mimetype="application/pdf")
 
 # ============================================
-# TEMPLATES ESTILO FBI ULTIMATE
+# TEMPLATES ESTILO FBI
 # ============================================
 
 LOGIN_HTML = '''
@@ -868,11 +870,15 @@ LOGIN_HTML = '''
     <div class="logo">🕵️</div>
     <h1>SPYNET</h1>
     <div class="sub">• SISTEMA DE INTELIGÊNCIA •</div>
-    <form method="POST">
+    
+    <form method="POST" action="/login">
         <input type="password" name="senha" placeholder="••••••••" autofocus required>
-        <button type="submit">🔐 AUTORIZAR ACESSO</button>
-        {% if erro %}<div class="erro">⚠️ {{ erro }}</div>{% endif %}
+        <button type="submit">🔐 ACESSAR</button>
     </form>
+    
+    {% if erro %}
+    <div class="erro">⚠️ {{ erro }}</div>
+    {% endif %}
 </div>
 <div class="badge">CLASSIFICAÇÃO: SIGILOSO • SPYNET SECURITY</div>
 </body>
@@ -1142,7 +1148,7 @@ if __name__ == "__main__":
     criar_chave_mestra()
     
     print("=" * 60)
-    print("🕵️ SPYNET OSINT ULTIMATE — SISTEMA ESTILO FBI")
+    print("🕵️ SPYNET OSINT ULTIMATE — SISTEMA COMPLETO")
     print("=" * 60)
     print(f"🔐 Senha do sistema: {SISTEMA_SENHA}")
     print(f"🔑 Chave mestra: {CHAVE_MESTRA}")
