@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYNET - Sentinel Monitor</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
+            border-right: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 20px 0;
+        }
+
+        .logo-sidebar {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .logo-sidebar img {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo-sidebar h2 {
+            color: #00ffff;
+            font-size: 20px;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            color: #ccc;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 255, 255, 0.15);
+            border-left-color: #00ffff;
+            color: #00ffff;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: #00ffff;
+            font-size: 24px;
+        }
+
+        .btn-sair {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .status-card {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        .status-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff4444;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #00aa44, #008833);
+            color: white;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 170, 68, 0.5);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ffaa00, #dd8800);
+            color: #1a1a2e;
+        }
+
+        .section {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .section h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .log-area {
+            background: #0a0a0a;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: monospace;
+            font-size: 12px;
+            height: 180px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            .logo-sidebar h2, .nav-item span:last-child {
+                display: none;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo-sidebar">
+            <img src="/static/logo.png" alt="SPYNET">
+            <h2>SPYNET</h2>
+        </div>
+        <div class="nav-item" onclick="window.location.href='/dashboard'">
+            <span>🏠</span>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item active" onclick="window.location.href='/sentinel'">
+            <span>🛡️</span>
+            <span>Sentinel Monitor</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='/osint'">
+            <span>🔍</span>
+            <span>OSINT IA</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='/casos'">
+            <span>📋</span>
+            <span>Casos</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Sentinel Monitor</h1>
+            <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
+        </div>
+
+        <div class="status-card">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span class="status-text" id="statusText">PARADO</span>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-start" id="btnIniciar">▶ INICIAR MONITORAMENTO</button>
+            <button class="btn btn-stop" id="btnParar">⏹️ PARAR</button>
+            <button class="btn btn-clear" id="btnLimpar">🗑️ LIMPAR LOGS</button>
+        </div>
+
+        <div class="section">
+            <h3>📸 SCREENSHOTS CAPTURADAS</h3>
+            <div class="log-area" id="screenshots">
+                Nenhuma screenshot capturada
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🎙️ ÁUDIOS CAPTURADOS</h3>
+            <div class="log-area" id="audios">
+                Nenhum áudio capturado
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>⌨️ TECLAS DIGITADAS (KEYLOGGER)</h3>
+            <div class="log-area" id="teclas">
+                Nenhuma tecla capturada
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📋 LOG DO SISTEMA</h3>
+            <div class="log-area" id="systemLogs">
+                Aguardando ações...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let monitorAtivo = false;
+        
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnParar = document.getElementById('btnParar');
+        const btnLimpar = document.getElementById('btnLimpar');
+        const systemLogs = document.getElementById('systemLogs');
+        const screenshotsDiv = document.getElementById('screenshots');
+        const audiosDiv = document.getElementById('audios');
+        const teclasDiv = document.getElementById('teclas');
+
+        function addLog(message, isSystem = true) {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `[${time}] ${message}`;
+            
+            if(isSystem) {
+                systemLogs.appendChild(logEntry);
+                systemLogs.scrollTop = systemLogs.scrollHeight;
+            }
+            
+            // Simular captura de dados quando monitorando
+            if(monitorAtivo && !isSystem) {
+                // Simular screenshot a cada 10 segundos
+                if(message.includes('screenshot')) {
+                    const ssEntry = document.createElement('div');
+                    ssEntry.className = 'log-entry';
+                    ssEntry.innerHTML = `[${time}] 📸 Screenshot capturada - Salva com sucesso`;
+                    screenshotsDiv.appendChild(ssEntry);
+                    screenshotsDiv.scrollTop = screenshotsDiv.scrollHeight;
+                }
+                // Simular áudio
+                if(message.includes('audio')) {
+                    const audioEntry = document.createElement('div');
+                    audioEntry.className = 'log-entry';
+                    audioEntry.innerHTML = `[${time}] 🎙️ Áudio capturado - Duração: ${Math.floor(Math.random() * 30)}s`;
+                    audiosDiv.appendChild(audioEntry);
+                    audiosDiv.scrollTop = audiosDiv.scrollHeight;
+                }
+                // Simular teclas
+                if(message.includes('tecla')) {
+                    const teclaEntry = document.createElement('div');
+                    teclaEntry.className = 'log-entry';
+                    teclaEntry.innerHTML = `[${time}] ⌨️ Tecla pressionada: ${message.split(':')[1] || '???'}`;
+                    teclasDiv.appendChild(teclaEntry);
+                    teclasDiv.scrollTop = teclasDiv.scrollHeight;
+                }
+            }
+        }
+
+        function atualizarStatusUI() {
+            if(monitorAtivo) {
+                statusIndicator.style.background = '#00ff00';
+                statusText.style.color = '#00ff00';
+                statusText.textContent = 'MONITORANDO ATIVO';
+                statusIndicator.style.animation = 'pulse 1.5s infinite';
+            } else {
+                statusIndicator.style.background = '#ff4444';
+                statusText.style.color = '#ff4444';
+                statusText.textContent = 'PARADO';
+                statusIndicator.style.animation = 'pulse 1.5s infinite';
+            }
+        }
+
+        // Simular capturas quando monitorando
+        let screenshotInterval, audioInterval, teclaInterval;
+        
+        function iniciarSimulacao() {
+            if(screenshotInterval) clearInterval(screenshotInterval);
+            if(audioInterval) clearInterval(audioInterval);
+            if(teclaInterval) clearInterval(teclaInterval);
+            
+            screenshotInterval = setInterval(() => {
+                if(monitorAtivo) addLog('screenshot: captura automatica', false);
+            }, 10000);
+            
+            audioInterval = setInterval(() => {
+                if(monitorAtivo) addLog('audio: captura de microfone', false);
+            }, 15000);
+            
+            // Simular digitação aleatória
+            const teclas = ['A', 'B', 'C', 'Enter', 'Espaço', 'Backspace', '1', '2', '3'];
+            teclaInterval = setInterval(() => {
+                if(monitorAtivo) {
+                    const tecla = teclas[Math.floor(Math.random() * teclas.length)];
+                    addLog(`tecla: ${tecla}`, false);
+                }
+            }, 3000);
+        }
+        
+        function pararSimulacao() {
+            if(screenshotInterval) clearInterval(screenshotInterval);
+            if(audioInterval) clearInterval(audioInterval);
+            if(teclaInterval) clearInterval(teclaInterval);
+        }
+
+        btnIniciar.addEventListener('click', async () => {
+            monitorAtivo = true;
+            atualizarStatusUI();
+            addLog('🟢 SISTEMA INICIADO - Monitoramento ativo');
+            addLog('🟢 Captura de screenshots ativada');
+            addLog('🟢 Captura de áudio ativada');
+            addLog('🟢 Keylogger ativado');
+            iniciarSimulacao();
+        });
+
+        btnParar.addEventListener('click', async () => {
+            monitorAtivo = false;
+            atualizarStatusUI();
+            addLog('🔴 SISTEMA PARADO - Monitoramento desativado');
+            addLog('🔴 Capturas de dados interrompidas');
+            pararSimulacao();
+        });
+
+        btnLimpar.addEventListener('click', async () => {
+            screenshotsDiv.innerHTML = 'Nenhuma screenshot capturada';
+            audiosDiv.innerHTML = 'Nenhum áudio capturado';
+            teclasDiv.innerHTML = 'Nenhuma tecla capturada';
+            systemLogs.innerHTML = 'Logs limpos com sucesso!';
+            addLog('🧹 LOGS LIMPOS - Histórico removido');
+        });
+
+        atualizarStatusUI();
+    </script>
+</body>
+</html>
