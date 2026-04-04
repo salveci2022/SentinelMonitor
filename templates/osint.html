@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPYNET - OSINT Intelligence</title>
-    <link rel="icon" type="image/png" href="/static/logo.png">
+    <title>SPYNET - OSINT</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <style>
         * {
             margin: 0;
@@ -22,13 +22,11 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 280px;
+            width: 260px;
             height: 100%;
             background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
             border-right: 1px solid rgba(0, 255, 255, 0.2);
             padding: 20px 0;
-            overflow-y: auto;
-            z-index: 100;
         }
 
         .logo-sidebar {
@@ -39,18 +37,18 @@
         }
 
         .logo-sidebar img {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
         }
 
         .logo-sidebar h2 {
             color: #00ffff;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .nav-item {
-            padding: 14px 24px;
+            padding: 12px 24px;
             color: #ccc;
             cursor: pointer;
             transition: 0.3s;
@@ -72,7 +70,7 @@
         }
 
         .main-content {
-            margin-left: 280px;
+            margin-left: 260px;
             padding: 20px;
         }
 
@@ -85,12 +83,10 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid rgba(0, 255, 255, 0.2);
-            flex-wrap: wrap;
         }
 
         .header h1 {
             color: #00ffff;
-            font-size: 24px;
         }
 
         .btn-sair {
@@ -102,108 +98,13 @@
             cursor: pointer;
         }
 
-        /* Abas */
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-            padding-bottom: 10px;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            background: rgba(20, 20, 40, 0.8);
-            border: 1px solid #333;
-            border-radius: 10px;
-            color: #ccc;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .tab-btn:hover {
-            background: rgba(0, 170, 255, 0.2);
-        }
-
-        .tab-btn.active {
-            background: #00aaff;
-            color: white;
-            border-color: #00aaff;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Cards de ferramentas */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .tool-card {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            transition: 0.3s;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-3px);
-            border-color: #00aaff;
-        }
-
-        .tool-card h4 {
-            color: #00ffff;
-            margin-bottom: 8px;
-        }
-
-        .tool-card p {
-            color: #888;
-            font-size: 12px;
-            margin-bottom: 12px;
-        }
-
-        .tool-link {
-            display: inline-block;
-            padding: 6px 12px;
-            background: rgba(0, 170, 255, 0.2);
-            color: #0af;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 12px;
-        }
-
-        .tool-link:hover {
-            background: #0af;
-            color: white;
-        }
-
-        /* Busca rápida */
-        .quick-search {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .search-input-group {
+        .search-box {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
-        .search-input-group input {
+        .search-box input {
             flex: 1;
             padding: 12px;
             background: rgba(20, 20, 40, 0.8);
@@ -212,45 +113,37 @@
             color: white;
         }
 
-        .search-input-group button {
+        .search-box button {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #00aaff, #0066cc);
+            background: #00aaff;
             border: none;
             border-radius: 10px;
             color: white;
             cursor: pointer;
         }
 
-        .platform-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .platform-btn {
-            padding: 8px 16px;
-            background: rgba(30, 30, 50, 0.8);
-            border: 1px solid #333;
-            border-radius: 20px;
-            color: #ccc;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .platform-btn:hover {
-            background: #00aaff;
-            color: white;
-        }
-
-        .results-area {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
             margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
+        }
+
+        .tool-card {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .tool-card h4 {
+            color: #00ffff;
+        }
+
+        .tool-card a {
+            color: #0af;
+            text-decoration: none;
+            font-size: 12px;
         }
 
         @media (max-width: 768px) {
@@ -263,16 +156,13 @@
             .main-content {
                 margin-left: 70px;
             }
-            .tools-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo-sidebar">
-            <img src="/static/logo.png" alt="SPYNET">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="SPYNET">
             <h2>SPYNET</h2>
         </div>
         <div class="nav-item" onclick="window.location.href='/dashboard'">
@@ -285,7 +175,7 @@
         </div>
         <div class="nav-item active" onclick="window.location.href='/osint'">
             <span>🔍</span>
-            <span>OSINT IA</span>
+            <span>OSINT</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/casos'">
             <span>📋</span>
@@ -295,356 +185,34 @@
 
     <div class="main-content">
         <div class="header">
-            <h1>🔍 OSINT Intelligence Platform</h1>
+            <h1>OSINT Intelligence</h1>
             <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
         </div>
 
-        <!-- Busca Rápida -->
-        <div class="quick-search">
-            <h3 style="color:#00ffff;">🔎 Busca Rápida Multi-Plataforma</h3>
-            <div class="search-input-group">
-                <input type="text" id="globalSearch" placeholder="Digite nome, e-mail, telefone, CPF, usuário...">
-                <button onclick="buscarMultiPlataforma()">🔍 Buscar</button>
-            </div>
-            <div class="platform-buttons" id="platformButtons">
-                <button class="platform-btn" onclick="buscarEm('google')">🌐 Google</button>
-                <button class="platform-btn" onclick="buscarEm('facebook')">📘 Facebook</button>
-                <button class="platform-btn" onclick="buscarEm('instagram')">📷 Instagram</button>
-                <button class="platform-btn" onclick="buscarEm('twitter')">🐦 X/Twitter</button>
-                <button class="platform-btn" onclick="buscarEm('linkedin')">💼 LinkedIn</button>
-                <button class="platform-btn" onclick="buscarEm('github')">🐙 GitHub</button>
-                <button class="platform-btn" onclick="buscarEm('youtube')">📺 YouTube</button>
-                <button class="platform-btn" onclick="buscarEm('tiktok')">🎵 TikTok</button>
-                <button class="platform-btn" onclick="buscarEm('telegram')">📱 Telegram</button>
-                <button class="platform-btn" onclick="buscarEm('whatsapp')">💚 WhatsApp</button>
-                <button class="platform-btn" onclick="buscarEm('pinterest')">📌 Pinterest</button>
-                <button class="platform-btn" onclick="buscarEm('reddit')">🤖 Reddit</button>
-            </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Digite nome, e-mail, telefone...">
+            <button onclick="buscar()">🔍 Buscar</button>
         </div>
 
-        <!-- Abas -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="ferramentas">🛠️ Ferramentas OSINT</button>
-            <button class="tab-btn" data-tab="redes">📱 Redes Sociais</button>
-            <button class="tab-btn" data-tab="documentos">📄 Documentos & Dados</button>
-            <button class="tab-btn" data-tab="seguranca">🛡️ Segurança & Breaches</button>
-            <button class="tab-btn" data-tab="mapas">🗺️ Mapas & Localização</button>
-            <button class="tab-btn" data-tab="apis">🔌 APIs & Frameworks</button>
-        </div>
-
-        <!-- Aba: Ferramentas OSINT -->
-        <div id="ferramentas" class="tab-content active">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>🕸️ OSINT Framework</h4>
-                    <p>Framework completo de recursos OSINT organizados por fonte e tipo</p>
-                    <a href="https://osintframework.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔍 Google Dorks</h4>
-                    <p>Consultas especializadas para explorar indexação do Google</p>
-                    <a href="https://www.google.com/search?q=intitle:index.of" target="_blank" class="tool-link">Google Dorks →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🌿 theHarvester</h4>
-                    <p>Coleta de subdomínios, e-mails e hosts (Kali Linux)</p>
-                    <a href="https://github.com/laramies/theHarvester" target="_blank" class="tool-link">GitHub →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🕷️ SpiderFoot</h4>
-                    <p>Automação OSINT com mais de 100 fontes de dados</p>
-                    <a href="https://www.spiderfoot.net/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🦎 Maltego</h4>
-                    <p>Reconhecimento digital com transforms e visualização de dados</p>
-                    <a href="https://www.maltego.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🌍 Shodan</h4>
-                    <p>Mecanismo de busca para IoT e deep web</p>
-                    <a href="https://www.shodan.io/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔧 Nmap</h4>
-                    <p>Scanner de rede e portas para reconhecimento</p>
-                    <a href="https://nmap.org/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📊 BuiltWith</h4>
-                    <p>Identifica tecnologias utilizadas em websites</p>
-                    <a href="https://builtwith.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔌 Mitaka</h4>
-                    <p>Extensão de browser para OSINT</p>
-                    <a href="https://github.com/ninoseki/mitaka" target="_blank" class="tool-link">GitHub →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba: Redes Sociais -->
-        <div id="redes" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>📘 Facebook Search</h4>
-                    <a href="https://www.facebook.com/search/top/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📷 Instagram Search</h4>
-                    <a href="https://www.instagram.com/explore/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🐦 X/Twitter Search</h4>
-                    <a href="https://twitter.com/search-advanced" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>💼 LinkedIn Search</h4>
-                    <a href="https://www.linkedin.com/search/results/people/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🐙 GitHub Search</h4>
-                    <a href="https://github.com/search" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📺 YouTube Search</h4>
-                    <a href="https://www.youtube.com/results" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🎵 TikTok Search</h4>
-                    <a href="https://www.tiktok.com/search" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📱 Telegram Search</h4>
-                    <a href="https://t.me/s/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🤖 Reddit Search</h4>
-                    <a href="https://www.reddit.com/search/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📌 Pinterest Search</h4>
-                    <a href="https://br.pinterest.com/search/" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba: Documentos & Dados -->
-        <div id="documentos" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>📜 JusBrasil</h4>
-                    <p>Processos judiciais e jurisprudência</p>
-                    <a href="https://www.jusbrasil.com.br/busca" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🏛️ Diário Oficial</h4>
-                    <p>Publicações oficiais do governo</p>
-                    <a href="https://www.in.gov.br/consulta" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📊 Dados Abertos BR</h4>
-                    <p>Portal brasileiro de dados abertos</p>
-                    <a href="https://dados.gov.br/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📚 Archive.org</h4>
-                    <p>Arquivo público da internet</p>
-                    <a href="https://archive.org/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📄 Google Docs Search</h4>
-                    <a href="https://www.google.com/search?q=site:docs.google.com" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📑 Pastebin Search</h4>
-                    <a href="https://pastebin.com/archive" target="_blank" class="tool-link">Buscar →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba: Segurança & Breaches -->
-        <div id="seguranca" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>🔐 Have I Been Pwned</h4>
-                    <p>Verifique se seu e-mail foi comprometido</p>
-                    <a href="https://haveibeenpwned.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📊 Recorded Future CVE DB</h4>
-                    <p>Base de dados de vulnerabilidades</p>
-                    <a href="https://www.recordedfuture.com/vulnerability-database" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🧪 Triage Malware Sandbox</h4>
-                    <p>Análise de malware online</p>
-                    <a href="https://tria.ge/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔌 SecurityTrails</h4>
-                    <p>DNS e WHOIS history</p>
-                    <a href="https://securitytrails.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📡 BGPView</h4>
-                    <p>Informações de roteamento BGP</p>
-                    <a href="https://bgpview.io/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔎 UnknownPhone</h4>
-                    <p>Consulta de números de telefone</p>
-                    <a href="https://www.unknownphone.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🛡️ IntelTechniques</h4>
-                    <p>Ferramentas OSINT por Michael Bazzell</p>
-                    <a href="https://inteltechniques.com/tools/index.html" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba: Mapas & Localização -->
-        <div id="mapas" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>🗺️ Google Maps</h4>
-                    <a href="https://www.google.com/maps" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📍 Busca CEP</h4>
-                    <a href="https://buscacep.inter.net/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📸 Pic2Map</h4>
-                    <p>Extrai localização de fotos (EXIF)</p>
-                    <a href="https://pic2map.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🌍 OpenStreetMap</h4>
-                    <a href="https://www.openstreetmap.org/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Aba: APIs & Frameworks -->
-        <div id="apis" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h4>🇧🇷 OSINT Brazuca</h4>
-                    <p>Comunidade e recursos OSINT Brasil</p>
-                    <a href="https://github.com/osintbrazuca/osint-brazuca" target="_blank" class="tool-link">GitHub →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📚 Start.me OSINT</h4>
-                    <p>Dashboard completo de ferramentas OSINT</p>
-                    <a href="https://start.me/p/6rOGjm/osint" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔌 OSINT Combine</h4>
-                    <a href="https://www.osintcombine.com/tools" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>📊 Hunter.io</h4>
-                    <p>Busca de e-mails profissionais</p>
-                    <a href="https://hunter.io/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-                <div class="tool-card">
-                    <h4>🔎 DeHashed</h4>
-                    <p>Busca de dados vazados</p>
-                    <a href="https://dehashed.com/" target="_blank" class="tool-link">Acessar →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Área de resultados -->
-        <div class="results-area" id="resultsArea">
-            <h4 style="color:#00ffff;">📋 Resultados da Busca</h4>
-            <div id="resultsContent">Clique em qualquer botão de busca ou ferramenta para começar.</div>
+        <div class="tools-grid">
+            <div class="tool-card"><h4>🌐 Google</h4><a href="https://www.google.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>📘 Facebook</h4><a href="https://www.facebook.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>📷 Instagram</h4><a href="https://www.instagram.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>🐦 Twitter</h4><a href="https://twitter.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>💼 LinkedIn</h4><a href="https://www.linkedin.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>🐙 GitHub</h4><a href="https://github.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>🔐 HaveIBeenPwned</h4><a href="https://haveibeenpwned.com" target="_blank">Acessar</a></div>
+            <div class="tool-card"><h4>📜 JusBrasil</h4><a href="https://www.jusbrasil.com.br" target="_blank">Acessar</a></div>
         </div>
     </div>
 
     <script>
-        // Abas
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(btn.dataset.tab).classList.add('active');
-            });
-        });
-
-        function buscarMultiPlataforma() {
-            const query = document.getElementById('globalSearch').value;
-            if(!query) {
-                alert('Digite algo para buscar');
-                return;
+        function buscar() {
+            const query = document.getElementById('searchInput').value;
+            if(query) {
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
             }
-            const resultsDiv = document.getElementById('resultsContent');
-            resultsDiv.innerHTML = `
-                <div style="padding:10px;">
-                    <p>🔍 Buscando por: <strong style="color:#0af;">${query}</strong></p>
-                    <div style="margin-top:15px;">
-                        <a href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🌐 Google</a>
-                        <a href="https://www.facebook.com/search/top?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">📘 Facebook</a>
-                        <a href="https://www.instagram.com/${encodeURIComponent(query.replace('@',''))}" target="_blank" style="color:#0af; margin-right:15px;">📷 Instagram</a>
-                        <a href="https://twitter.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🐦 Twitter</a>
-                        <a href="https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(query)}" target="_blank" style="color:#0af;">💼 LinkedIn</a>
-                    </div>
-                    <div style="margin-top:15px;">
-                        <a href="https://github.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🐙 GitHub</a>
-                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">📺 YouTube</a>
-                        <a href="https://www.tiktok.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🎵 TikTok</a>
-                        <a href="https://www.reddit.com/search/?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af;">🤖 Reddit</a>
-                    </div>
-                    <div style="margin-top:15px;">
-                        <a href="https://haveibeenpwned.com/account/${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🔐 HaveIBeenPwned</a>
-                        <a href="https://www.jusbrasil.com.br/busca?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af;">📜 JusBrasil</a>
-                    </div>
-                </div>
-            `;
         }
-
-        function buscarEm(plataforma) {
-            const query = document.getElementById('globalSearch').value;
-            if(!query) {
-                alert('Digite algo para buscar primeiro');
-                return;
-            }
-            
-            const urls = {
-                google: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-                facebook: `https://www.facebook.com/search/top?q=${encodeURIComponent(query)}`,
-                instagram: `https://www.instagram.com/${encodeURIComponent(query.replace('@',''))}`,
-                twitter: `https://twitter.com/search?q=${encodeURIComponent(query)}`,
-                linkedin: `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(query)}`,
-                github: `https://github.com/search?q=${encodeURIComponent(query)}`,
-                youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
-                tiktok: `https://www.tiktok.com/search?q=${encodeURIComponent(query)}`,
-                telegram: `https://t.me/s/${encodeURIComponent(query.replace('@',''))}`,
-                whatsapp: `https://wa.me/55${query.replace(/\D/g,'')}`,
-                pinterest: `https://br.pinterest.com/search/?q=${encodeURIComponent(query)}`,
-                reddit: `https://www.reddit.com/search/?q=${encodeURIComponent(query)}`
-            };
-            
-            if(urls[plataforma]) {
-                window.open(urls[plataforma], '_blank');
-            }
-            
-            const resultsDiv = document.getElementById('resultsContent');
-            resultsDiv.innerHTML = `
-                <div style="padding:10px;">
-                    <p>🔍 Abrindo busca para <strong>${plataforma}</strong> com termo: <strong style="color:#0af;">${query}</strong></p>
-                    <p>✅ Nova aba aberta! Se não abrir, verifique seu bloqueador de pop-ups.</p>
-                </div>
-            `;
-        }
-
-        // Buscar ao pressionar Enter
-        document.getElementById('globalSearch').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') buscarMultiPlataforma();
-        });
     </script>
 </body>
 </html>

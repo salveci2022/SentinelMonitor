@@ -1,14 +1,23 @@
-SystemData/
-__pycache__/
-*.pyc
-*.log
-*.wav
-*.png
-venv/
-.env
-.DS_Store
+# Banco de dados
+spynet.db
+*.db
+
+# Configurações
 config.py
-SystemData/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
 *.log
-*.wav
-*.png
+
+# Backup
+*.bak
+*.backup
