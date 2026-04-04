@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPYNET - OSINT</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <title>SPYNET - OSINT Intelligence</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 260px;
+            width: 270px;
             height: 100%;
             background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
             border-right: 1px solid rgba(0, 255, 255, 0.2);
@@ -37,18 +37,18 @@
         }
 
         .logo-sidebar img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 65px;
+            height: 65px;
+            border-radius: 15px;
         }
 
         .logo-sidebar h2 {
             color: #00ffff;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .nav-item {
-            padding: 12px 24px;
+            padding: 14px 24px;
             color: #ccc;
             cursor: pointer;
             transition: 0.3s;
@@ -70,7 +70,7 @@
         }
 
         .main-content {
-            margin-left: 260px;
+            margin-left: 270px;
             padding: 20px;
         }
 
@@ -87,6 +87,7 @@
 
         .header h1 {
             color: #00ffff;
+            font-size: 24px;
         }
 
         .btn-sair {
@@ -98,52 +99,97 @@
             cursor: pointer;
         }
 
+        .search-section {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .search-section h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+        }
+
         .search-box {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .search-box input {
             flex: 1;
-            padding: 12px;
+            padding: 14px 18px;
             background: rgba(20, 20, 40, 0.8);
             border: 1px solid #333;
-            border-radius: 10px;
-            color: white;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #00ffff;
         }
 
         .search-box button {
-            padding: 12px 25px;
-            background: #00aaff;
-            border: none;
-            border-radius: 10px;
+            padding: 14px 35px;
+            background: linear-gradient(135deg, #00aaff, #0066cc);
             color: white;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: bold;
         }
 
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
 
         .tool-card {
             background: rgba(10, 10, 26, 0.9);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 15px;
             border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-3px);
+            border-color: #00aaff;
         }
 
         .tool-card h4 {
             color: #00ffff;
+            margin-bottom: 8px;
+        }
+
+        .tool-card p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
         }
 
         .tool-card a {
             color: #0af;
             text-decoration: none;
             font-size: 12px;
+        }
+
+        .tool-card a:hover {
+            text-decoration: underline;
+        }
+
+        .results-area {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
         }
 
         @media (max-width: 768px) {
@@ -162,7 +208,7 @@
 <body>
     <div class="sidebar">
         <div class="logo-sidebar">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="SPYNET">
+            <img src="/static/logo.png" alt="SPYNET">
             <h2>SPYNET</h2>
         </div>
         <div class="nav-item" onclick="window.location.href='/dashboard'">
@@ -175,7 +221,7 @@
         </div>
         <div class="nav-item active" onclick="window.location.href='/osint'">
             <span>🔍</span>
-            <span>OSINT</span>
+            <span>OSINT IA</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/casos'">
             <span>📋</span>
@@ -185,34 +231,122 @@
 
     <div class="main-content">
         <div class="header">
-            <h1>OSINT Intelligence</h1>
+            <h1>OSINT Intelligence Platform</h1>
             <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
         </div>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Digite nome, e-mail, telefone...">
-            <button onclick="buscar()">🔍 Buscar</button>
+        <div class="search-section">
+            <h2>🔎 Busca Rápida</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Digite nome, e-mail, telefone, CPF ou usuário...">
+                <button onclick="buscar()">🔍 BUSCAR</button>
+            </div>
         </div>
 
         <div class="tools-grid">
-            <div class="tool-card"><h4>🌐 Google</h4><a href="https://www.google.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>📘 Facebook</h4><a href="https://www.facebook.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>📷 Instagram</h4><a href="https://www.instagram.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>🐦 Twitter</h4><a href="https://twitter.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>💼 LinkedIn</h4><a href="https://www.linkedin.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>🐙 GitHub</h4><a href="https://github.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>🔐 HaveIBeenPwned</h4><a href="https://haveibeenpwned.com" target="_blank">Acessar</a></div>
-            <div class="tool-card"><h4>📜 JusBrasil</h4><a href="https://www.jusbrasil.com.br" target="_blank">Acessar</a></div>
+            <div class="tool-card">
+                <h4>🌐 Google</h4>
+                <p>Mecanismo de busca principal</p>
+                <a href="https://www.google.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>📘 Facebook</h4>
+                <p>Busca de perfis e informações</p>
+                <a href="https://www.facebook.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>📷 Instagram</h4>
+                <p>Investigação de perfis</p>
+                <a href="https://www.instagram.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>🐦 X/Twitter</h4>
+                <p>Monitoramento de conversas</p>
+                <a href="https://twitter.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>💼 LinkedIn</h4>
+                <p>Informações profissionais</p>
+                <a href="https://www.linkedin.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>🐙 GitHub</h4>
+                <p>Códigos e desenvolvedores</p>
+                <a href="https://github.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>🔐 HaveIBeenPwned</h4>
+                <p>Verifique dados vazados</p>
+                <a href="https://haveibeenpwned.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>📜 JusBrasil</h4>
+                <p>Processos judiciais</p>
+                <a href="https://www.jusbrasil.com.br" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>📺 YouTube</h4>
+                <p>Busca de vídeos e canais</p>
+                <a href="https://www.youtube.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>🎵 TikTok</h4>
+                <p>Investigação em vídeos curtos</p>
+                <a href="https://www.tiktok.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>🤖 Reddit</h4>
+                <p>Comunidades e discussões</p>
+                <a href="https://www.reddit.com" target="_blank">Acessar →</a>
+            </div>
+            <div class="tool-card">
+                <h4>📱 Telegram</h4>
+                <p>Canais e grupos</p>
+                <a href="https://web.telegram.org" target="_blank">Acessar →</a>
+            </div>
+        </div>
+
+        <div class="results-area" id="resultsArea">
+            <h4 style="color:#00ffff; margin-bottom:10px;">📋 Resultados</h4>
+            <div id="resultsContent">Digite algo no campo de busca acima e clique em "BUSCAR" para iniciar uma investigação.</div>
         </div>
     </div>
 
     <script>
         function buscar() {
             const query = document.getElementById('searchInput').value;
-            if(query) {
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+            const resultsDiv = document.getElementById('resultsContent');
+            
+            if(query.trim() === '') {
+                resultsDiv.innerHTML = '<span style="color:#ff4444;">⚠️ Digite algo para buscar</span>';
+                return;
             }
+            
+            resultsDiv.innerHTML = `
+                <div style="padding:10px;">
+                    <p>🔍 Buscando por: <strong style="color:#0af;">${query}</strong></p>
+                    <div style="margin-top:15px;">
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🌐 Google</a>
+                        <a href="https://www.facebook.com/search/top?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">📘 Facebook</a>
+                        <a href="https://www.instagram.com/${encodeURIComponent(query.replace('@',''))}" target="_blank" style="color:#0af; margin-right:15px;">📷 Instagram</a>
+                        <a href="https://twitter.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🐦 Twitter</a>
+                        <a href="https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(query)}" target="_blank" style="color:#0af;">💼 LinkedIn</a>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <a href="https://github.com/search?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🐙 GitHub</a>
+                        <a href="https://haveibeenpwned.com/account/${encodeURIComponent(query)}" target="_blank" style="color:#0af; margin-right:15px;">🔐 HaveIBeenPwned</a>
+                        <a href="https://www.jusbrasil.com.br/busca?q=${encodeURIComponent(query)}" target="_blank" style="color:#0af;">📜 JusBrasil</a>
+                    </div>
+                    <div style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.3); border-radius:8px;">
+                        <small>💡 Dica: Clique nos links acima para abrir as buscas em novas abas.</small>
+                    </div>
+                </div>
+            `;
         }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') buscar();
+        });
     </script>
 </body>
 </html>

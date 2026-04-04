@@ -1,15 +1,16 @@
 # Banco de dados
-spynet.db
 *.db
-
-# Configurações
-config.py
-.env
+*.sqlite
 
 # Python
 __pycache__/
 *.py[cod]
 *.so
+
+# Ambiente virtual
+venv/
+env/
+.env
 
 # IDE
 .vscode/

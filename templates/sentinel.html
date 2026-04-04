@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPYNET - Sentinel Monitor</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 260px;
+            width: 270px;
             height: 100%;
             background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
             border-right: 1px solid rgba(0, 255, 255, 0.2);
@@ -37,18 +37,19 @@
         }
 
         .logo-sidebar img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 65px;
+            height: 65px;
+            border-radius: 15px;
+            margin-bottom: 10px;
         }
 
         .logo-sidebar h2 {
             color: #00ffff;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .nav-item {
-            padding: 12px 24px;
+            padding: 14px 24px;
             color: #ccc;
             cursor: pointer;
             transition: 0.3s;
@@ -70,7 +71,7 @@
         }
 
         .main-content {
-            margin-left: 260px;
+            margin-left: 270px;
             padding: 20px;
         }
 
@@ -87,6 +88,7 @@
 
         .header h1 {
             color: #00ffff;
+            font-size: 24px;
         }
 
         .btn-sair {
@@ -103,12 +105,27 @@
             border-radius: 15px;
             padding: 25px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border: 1px solid rgba(0, 255, 255, 0.2);
         }
 
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
         .status-text {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: #ff4444;
         }
@@ -117,29 +134,41 @@
             display: flex;
             gap: 15px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 30px;
+            padding: 12px 35px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s;
         }
 
         .btn-start {
-            background: #00aa44;
+            background: linear-gradient(135deg, #00aa44, #008833);
             color: white;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 170, 68, 0.5);
         }
 
         .btn-stop {
-            background: #ff4444;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
             color: white;
         }
 
+        .btn-stop:hover {
+            transform: scale(1.05);
+        }
+
         .btn-clear {
-            background: #ffaa00;
+            background: linear-gradient(135deg, #ffaa00, #dd8800);
             color: #1a1a2e;
         }
 
@@ -154,6 +183,7 @@
         .section h3 {
             color: #00ffff;
             margin-bottom: 15px;
+            font-size: 18px;
         }
 
         .log-area {
@@ -162,8 +192,14 @@
             padding: 15px;
             color: #00ff00;
             font-family: monospace;
-            height: 150px;
+            font-size: 12px;
+            height: 180px;
             overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
         }
 
         @media (max-width: 768px) {
@@ -179,13 +215,16 @@
             .button-group {
                 flex-direction: column;
             }
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo-sidebar">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="SPYNET">
+            <img src="/static/logo.png" alt="SPYNET">
             <h2>SPYNET</h2>
         </div>
         <div class="nav-item" onclick="window.location.href='/dashboard'">
@@ -198,7 +237,7 @@
         </div>
         <div class="nav-item" onclick="window.location.href='/osint'">
             <span>🔍</span>
-            <span>OSINT</span>
+            <span>OSINT IA</span>
         </div>
         <div class="nav-item" onclick="window.location.href='/casos'">
             <span>📋</span>
@@ -213,52 +252,148 @@
         </div>
 
         <div class="status-card">
-            <div class="status-text" id="statusText">⚫ PARADO</div>
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span class="status-text" id="statusText">PARADO</span>
         </div>
 
         <div class="button-group">
-            <button class="btn btn-start" id="btnIniciar">▶ INICIAR</button>
+            <button class="btn btn-start" id="btnIniciar">▶ INICIAR MONITORAMENTO</button>
             <button class="btn btn-stop" id="btnParar">⏹️ PARAR</button>
-            <button class="btn btn-clear" id="btnLimpar">🗑️ LIMPAR</button>
+            <button class="btn btn-clear" id="btnLimpar">🗑️ LIMPAR LOGS</button>
         </div>
 
         <div class="section">
-            <h3>📸 Screenshots</h3>
-            <div class="log-area" id="screenshots">Nenhuma screenshot</div>
+            <h3>📸 SCREENSHOTS</h3>
+            <div class="log-area" id="screenshots">Nenhuma screenshot capturada</div>
         </div>
 
         <div class="section">
-            <h3>🎙️ Áudios</h3>
-            <div class="log-area" id="audios">Nenhum áudio</div>
+            <h3>🎙️ ÁUDIOS</h3>
+            <div class="log-area" id="audios">Nenhum áudio capturado</div>
         </div>
 
         <div class="section">
-            <h3>⌨️ Teclas Digitadas</h3>
-            <div class="log-area" id="teclas">Nenhuma tecla</div>
+            <h3>⌨️ TECLAS DIGITADAS</h3>
+            <div class="log-area" id="teclas">Nenhuma tecla capturada</div>
+        </div>
+
+        <div class="section">
+            <h3>📋 LOG DO SISTEMA</h3>
+            <div class="log-area" id="systemLogs">Aguardando ações...</div>
         </div>
     </div>
 
     <script>
-        let ativo = false;
+        let monitorAtivo = false;
+        
+        const statusIndicator = document.getElementById('statusIndicator');
         const statusText = document.getElementById('statusText');
+        const systemLogs = document.getElementById('systemLogs');
+        const screenshotsDiv = document.getElementById('screenshots');
+        const audiosDiv = document.getElementById('audios');
+        const teclasDiv = document.getElementById('teclas');
+
+        function addLog(message, isSystem = true) {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `[${time}] ${message}`;
+            
+            if(isSystem) {
+                systemLogs.appendChild(logEntry);
+                systemLogs.scrollTop = systemLogs.scrollHeight;
+            }
+            
+            if(monitorAtivo && !isSystem) {
+                if(message.includes('screenshot')) {
+                    const ssEntry = document.createElement('div');
+                    ssEntry.className = 'log-entry';
+                    ssEntry.innerHTML = `[${time}] 📸 Screenshot capturada`;
+                    screenshotsDiv.appendChild(ssEntry);
+                    screenshotsDiv.scrollTop = screenshotsDiv.scrollHeight;
+                }
+                if(message.includes('audio')) {
+                    const audioEntry = document.createElement('div');
+                    audioEntry.className = 'log-entry';
+                    audioEntry.innerHTML = `[${time}] 🎙️ Áudio capturado`;
+                    audiosDiv.appendChild(audioEntry);
+                    audiosDiv.scrollTop = audiosDiv.scrollHeight;
+                }
+                if(message.includes('tecla')) {
+                    const teclaEntry = document.createElement('div');
+                    teclaEntry.className = 'log-entry';
+                    teclaEntry.innerHTML = `[${time}] ⌨️ ${message}`;
+                    teclasDiv.appendChild(teclaEntry);
+                    teclasDiv.scrollTop = teclasDiv.scrollHeight;
+                }
+            }
+        }
+
+        function atualizarStatusUI() {
+            if(monitorAtivo) {
+                statusIndicator.style.background = '#00ff00';
+                statusText.style.color = '#00ff00';
+                statusText.textContent = 'MONITORANDO ATIVO';
+            } else {
+                statusIndicator.style.background = '#ff4444';
+                statusText.style.color = '#ff4444';
+                statusText.textContent = 'PARADO';
+            }
+        }
+
+        let screenshotInterval, audioInterval, teclaInterval;
         
+        function iniciarSimulacao() {
+            if(screenshotInterval) clearInterval(screenshotInterval);
+            if(audioInterval) clearInterval(audioInterval);
+            if(teclaInterval) clearInterval(teclaInterval);
+            
+            screenshotInterval = setInterval(() => {
+                if(monitorAtivo) addLog('screenshot: captura', false);
+            }, 10000);
+            
+            audioInterval = setInterval(() => {
+                if(monitorAtivo) addLog('audio: captura', false);
+            }, 15000);
+            
+            const teclas = ['A', 'B', 'C', 'Enter', 'Espaço', 'Delete'];
+            teclaInterval = setInterval(() => {
+                if(monitorAtivo) {
+                    const tecla = teclas[Math.floor(Math.random() * teclas.length)];
+                    addLog(`tecla: ${tecla}`, false);
+                }
+            }, 3000);
+        }
+        
+        function pararSimulacao() {
+            if(screenshotInterval) clearInterval(screenshotInterval);
+            if(audioInterval) clearInterval(audioInterval);
+            if(teclaInterval) clearInterval(teclaInterval);
+        }
+
         document.getElementById('btnIniciar').onclick = () => {
-            ativo = true;
-            statusText.innerHTML = '🟢 MONITORANDO';
-            statusText.style.color = '#00ff00';
+            monitorAtivo = true;
+            atualizarStatusUI();
+            addLog('🟢 SISTEMA INICIADO - Monitoramento ativo');
+            iniciarSimulacao();
         };
-        
+
         document.getElementById('btnParar').onclick = () => {
-            ativo = false;
-            statusText.innerHTML = '🔴 PARADO';
-            statusText.style.color = '#ff4444';
+            monitorAtivo = false;
+            atualizarStatusUI();
+            addLog('🔴 SISTEMA PARADO - Monitoramento desativado');
+            pararSimulacao();
         };
-        
+
         document.getElementById('btnLimpar').onclick = () => {
-            document.getElementById('screenshots').innerHTML = 'Nenhuma screenshot';
-            document.getElementById('audios').innerHTML = 'Nenhum áudio';
-            document.getElementById('teclas').innerHTML = 'Nenhuma tecla';
+            screenshotsDiv.innerHTML = 'Nenhuma screenshot capturada';
+            audiosDiv.innerHTML = 'Nenhum áudio capturado';
+            teclasDiv.innerHTML = 'Nenhuma tecla capturada';
+            systemLogs.innerHTML = 'Logs limpos!';
+            addLog('🧹 LOGS LIMPOS');
         };
+
+        atualizarStatusUI();
     </script>
 </body>
 </html>

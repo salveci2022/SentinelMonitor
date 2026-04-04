@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPYNET - Casos</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 260px;
+            width: 270px;
             height: 100%;
             background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
             border-right: 1px solid rgba(0, 255, 255, 0.2);
@@ -37,18 +37,18 @@
         }
 
         .logo-sidebar img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 65px;
+            height: 65px;
+            border-radius: 15px;
         }
 
         .logo-sidebar h2 {
             color: #00ffff;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .nav-item {
-            padding: 12px 24px;
+            padding: 14px 24px;
             color: #ccc;
             cursor: pointer;
             transition: 0.3s;
@@ -70,7 +70,7 @@
         }
 
         .main-content {
-            margin-left: 260px;
+            margin-left: 270px;
             padding: 20px;
         }
 
@@ -87,6 +87,7 @@
 
         .header h1 {
             color: #00ffff;
+            font-size: 24px;
         }
 
         .btn-sair {
@@ -98,14 +99,63 @@
             cursor: pointer;
         }
 
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .stat-card .label {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
         .btn-criar {
-            background: #00aaff;
+            background: linear-gradient(135deg, #00aaff, #0066cc);
             color: white;
             border: none;
             padding: 12px 25px;
             border-radius: 10px;
             cursor: pointer;
             margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .filtros {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filtro-btn {
+            padding: 8px 20px;
+            background: rgba(30, 30, 50, 0.8);
+            border: 1px solid #333;
+            border-radius: 25px;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .filtro-btn.active {
+            background: #00aaff;
+            color: white;
         }
 
         .caso-card {
@@ -114,15 +164,60 @@
             padding: 20px;
             margin-bottom: 15px;
             border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: 0.3s;
         }
 
-        .caso-card h3 {
+        .caso-card:hover {
+            transform: translateX(5px);
+            border-left-color: #00ffff;
+            border-left-width: 3px;
+        }
+
+        .caso-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .caso-titulo {
             color: #00ffff;
+            font-size: 18px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-em_andamento {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+        }
+
+        .prioridade-alta {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        .caso-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
         }
 
         .empty {
             text-align: center;
-            padding: 40px;
+            padding: 60px;
             color: #666;
         }
 
@@ -136,13 +231,16 @@
             .main-content {
                 margin-left: 70px;
             }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo-sidebar">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="SPYNET">
+            <img src="/static/logo.png" alt="SPYNET">
             <h2>SPYNET</h2>
         </div>
         <div class="nav-item" onclick="window.location.href='/dashboard'">
@@ -155,7 +253,7 @@
         </div>
         <div class="nav-item" onclick="window.location.href='/osint'">
             <span>🔍</span>
-            <span>OSINT</span>
+            <span>OSINT IA</span>
         </div>
         <div class="nav-item active" onclick="window.location.href='/casos'">
             <span>📋</span>
@@ -165,38 +263,137 @@
 
     <div class="main-content">
         <div class="header">
-            <h1>Casos</h1>
+            <h1>Casos Investigativos</h1>
             <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
         </div>
 
-        <button class="btn-criar" onclick="criarCaso()">+ Criar novo caso</button>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="totalCasos">0</div>
+                <div class="label">Total de Casos</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="casosAndamento">0</div>
+                <div class="label">Em Andamento</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="casosConcluidos">0</div>
+                <div class="label">Concluídos</div>
+            </div>
+        </div>
+
+        <button class="btn-criar" onclick="criarCaso()">+ NOVO CASO</button>
+
+        <div class="filtros">
+            <button class="filtro-btn active" data-filtro="todos">📋 Todos</button>
+            <button class="filtro-btn" data-filtro="em_andamento">⚡ Em Andamento</button>
+            <button class="filtro-btn" data-filtro="concluido">✅ Concluídos</button>
+        </div>
+
         <div id="listaCasos"></div>
     </div>
 
     <script>
-        let casos = [];
+        let casos = JSON.parse(localStorage.getItem('spynet_casos')) || [];
+        let filtroAtual = 'todos';
+
+        function salvarCasos() {
+            localStorage.setItem('spynet_casos', JSON.stringify(casos));
+        }
+
+        function atualizarEstatisticas() {
+            const total = casos.length;
+            const andamento = casos.filter(c => c.status === 'em_andamento').length;
+            const concluidos = casos.filter(c => c.status === 'concluido').length;
+            
+            document.getElementById('totalCasos').textContent = total;
+            document.getElementById('casosAndamento').textContent = andamento;
+            document.getElementById('casosConcluidos').textContent = concluidos;
+        }
+
+        function atualizarLista() {
+            let casosFiltrados = casos;
+            if(filtroAtual === 'em_andamento') {
+                casosFiltrados = casos.filter(c => c.status === 'em_andamento');
+            } else if(filtroAtual === 'concluido') {
+                casosFiltrados = casos.filter(c => c.status === 'concluido');
+            }
+            
+            const container = document.getElementById('listaCasos');
+            
+            if(casosFiltrados.length === 0) {
+                container.innerHTML = '<div class="empty">📋 Nenhum caso encontrado. Clique em "NOVO CASO" para começar.</div>';
+                return;
+            }
+            
+            container.innerHTML = casosFiltrados.map(caso => `
+                <div class="caso-card">
+                    <div class="caso-header">
+                        <div class="caso-titulo">${caso.nome}</div>
+                        <div style="display: flex; gap: 10px;">
+                            ${caso.prioridade === 'alta' ? '<span class="prioridade-alta">🚨 Prioridade Alta</span>' : ''}
+                            <span class="status-badge status-${caso.status}">${caso.status === 'em_andamento' ? 'Em Andamento' : 'Concluído'}</span>
+                        </div>
+                    </div>
+                    <div class="caso-info">
+                        <div>📝 ${caso.descricao || 'Sem descrição'}</div>
+                        <div>👤 Vítima: ${caso.vitima || 'Não informada'}</div>
+                        <div>👁️ Suspeito: ${caso.suspeito || 'Não informado'}</div>
+                        <div>📅 Criado em: ${caso.data_criacao}</div>
+                    </div>
+                    ${caso.status === 'em_andamento' ? `
+                        <div style="margin-top:15px;">
+                            <button onclick="concluirCaso(${caso.id})" style="background:rgba(0,255,0,0.2); color:#0f0; border:1px solid #0f0; padding:8px 16px; border-radius:8px; cursor:pointer;">✅ Concluir Caso</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+            
+            atualizarEstatisticas();
+        }
 
         function criarCaso() {
-            const nome = prompt('Nome do caso:');
-            if(nome) {
-                casos.push({id: Date.now(), nome: nome, data: new Date().toLocaleDateString()});
+            const nome = prompt('📋 Título do caso:');
+            if(!nome) return;
+            
+            const descricao = prompt('📝 Descrição do caso:');
+            const vitima = prompt('👤 Nome da vítima:');
+            const suspeito = prompt('👁️ Nome do suspeito:');
+            const prioridade = prompt('🚨 Prioridade (alta/media/baixa):', 'media');
+            
+            const novoCaso = {
+                id: Date.now(),
+                nome: nome,
+                descricao: descricao || 'Sem descrição',
+                vitima: vitima || 'Não informada',
+                suspeito: suspeito || 'Não informado',
+                prioridade: prioridade === 'alta' ? 'alta' : (prioridade === 'baixa' ? 'baixa' : 'media'),
+                status: 'em_andamento',
+                data_criacao: new Date().toLocaleString()
+            };
+            
+            casos.unshift(novoCaso);
+            salvarCasos();
+            atualizarLista();
+        }
+
+        function concluirCaso(id) {
+            const caso = casos.find(c => c.id === id);
+            if(caso) {
+                caso.status = 'concluido';
+                salvarCasos();
                 atualizarLista();
             }
         }
 
-        function atualizarLista() {
-            const container = document.getElementById('listaCasos');
-            if(casos.length === 0) {
-                container.innerHTML = '<div class="empty">Nenhum caso registrado</div>';
-                return;
-            }
-            container.innerHTML = casos.map(c => `
-                <div class="caso-card">
-                    <h3>${c.nome}</h3>
-                    <p>Criado em: ${c.data}</p>
-                </div>
-            `).join('');
-        }
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filtroAtual = btn.dataset.filtro;
+                atualizarLista();
+            });
+        });
 
         atualizarLista();
     </script>
