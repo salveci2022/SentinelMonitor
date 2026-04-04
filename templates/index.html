@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYNET OSINT - Inteligência Digital para Investigadores Profissionais</title>
+    <meta name="description" content="Sistema profissional de investigação digital. Localize pessoas, encontre bens, analise crédito e gere relatórios em minutos.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1a3a 100%);
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* HEADER */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+        }
+        
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+        
+        .logo span {
+            color: #fff;
+        }
+        
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: #00ffcc;
+        }
+        
+        .btn-demo {
+            background: linear-gradient(45deg, #00ffcc, #00ccff);
+            color: #0a0e1a;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-demo:hover {
+            transform: scale(1.05);
+        }
+        
+        /* HERO */
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffcc, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #8899aa;
+            margin-bottom: 40px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #8899aa;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #00ffcc, #00ccff);
+            color: #0a0e1a;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18px;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #00ffcc;
+            color: #00ffcc;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: #00ffcc;
+            color: #0a0e1a;
+            transform: scale(1.05);
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+        
+        /* FUNCIONALIDADES */
+        .features {
+            padding: 80px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 50px;
+            color: #00ffcc;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #00ffcc;
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .feature-desc {
+            color: #8899aa;
+            font-size: 14px;
+        }
+        
+        /* DEPOIMENTOS */
+        .testimonials {
+            padding: 80px 0;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border-left: 3px solid #00ffcc;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 20px;
+            color: #e8edf5;
+        }
+        
+        .testimonial-author {
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        
+        .testimonial-role {
+            font-size: 12px;
+            color: #8899aa;
+        }
+        
+        /* PREÇOS */
+        .pricing {
+            padding: 80px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .pricing-card.popular {
+            border: 2px solid #00ffcc;
+            position: relative;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ffcc;
+            color: #0a0e1a;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .pricing-price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ffcc;
+            margin: 20px 0;
+        }
+        
+        .pricing-price span {
+            font-size: 18px;
+            color: #8899aa;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-pricing {
+            background: #00ffcc;
+            color: #0a0e1a;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        
+        .btn-pricing:hover {
+            transform: scale(1.05);
+        }
+        
+        /* CTA FINAL */
+        .cta-final {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta-final h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .cta-final p {
+            color: #8899aa;
+            margin-bottom: 30px;
+        }
+        
+        /* FOOTER */
+        .footer {
+            background: #050a12;
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer p {
+            color: #8899aa;
+            font-size: 12px;
+        }
+        
+        /* VIDEO MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        .modal-content iframe {
+            width: 100%;
+            height: 450px;
+            border-radius: 10px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            font-size: 40px;
+            cursor: pointer;
+            color: #fff;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            .stats {
+                gap: 20px;
+            }
+            .nav a {
+                margin-left: 15px;
+            }
+            .modal-content iframe {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">🕵️ SPYNET</div>
+            <div class="nav">
+                <a href="#features">Funcionalidades</a>
+                <a href="#testimonials">Depoimentos</a>
+                <a href="#pricing">Planos</a>
+                <a href="https://wa.me/5561995120797" class="btn-demo" target="_blank">📞 FALAR COM ESPECIALISTA</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Inteligência Digital para Investigadores Profissionais</h1>
+            <p>Localize pessoas, encontre bens e tenha relatórios em minutos. Tudo online, sem instalação.</p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">+500</div>
+                    <div class="stat-label">Investigações Concluídas</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Satisfação</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Disponibilidade</div>
+                </div>
+            </div>
+            
+            <div class="cta-buttons">
+                <a href="https://sentinelmonitor.onrender.com" class="btn-primary" target="_blank">🔓 ACESSAR SISTEMA</a>
+                <a href="#demo" class="btn-secondary" id="watchVideoBtn">▶️ ASSISTIR DEMONSTRAÇÃO</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">🔥 Funcionalidades que fazem a diferença</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🆔</div>
+                    <div class="feature-title">Busca por CPF</div>
+                    <div class="feature-desc">Localize qualquer pessoa em minutos. Dados atualizados de fontes oficiais.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <div class="feature-title">Bens Patrimoniais</div>
+                    <div class="feature-desc">Encontre imóveis e veículos registrados em nome do devedor.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Análise de Crédito</div>
+                    <div class="feature-desc">Consulte score, restrições e protestos em cartório.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">Redes Sociais</div>
+                    <div class="feature-desc">Encontre perfis em Instagram, Facebook, LinkedIn e mais.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-title">Localização</div>
+                    <div class="feature-desc">Endereço, telefone e e-mails vinculados à pessoa.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔓</div>
+                    <div class="feature-title">Dados Vazados</div>
+                    <div class="feature-desc">Verifique se o email foi exposto na dark web.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <div class="feature-title">Relatórios PDF</div>
+                    <div class="feature-desc">Documentos profissionais prontos para processos judiciais.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Acesso Mobile</div>
+                    <div class="feature-desc">Funciona no celular, tablet e computador.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <h2 class="section-title">💬 O que nossos clientes dizem</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Consegui localizar um devedor em menos de 5 minutos. O SPYNET revolucionou meu escritório!"</div>
+                    <div class="testimonial-author">Dr. André Santos</div>
+                    <div class="testimonial-role">Advogado | SP</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Os relatórios são muito profissionais. Meus clientes ficam impressionados com a qualidade."</div>
+                    <div class="testimonial-author">Dra. Carla Lima</div>
+                    <div class="testimonial-role">Detetive Particular | RJ</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Fácil de usar e muito rápido. Recomendo para todos os profissionais da área."</div>
+                    <div class="testimonial-author">Paulo Ricardo</div>
+                    <div class="testimonial-role">Investigador | BA</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">💰 Planos e Preços</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-price">R$ 97<span>/mês</span></div>
+                    <ul class="pricing-features">
+                        <li>✅ Busca por CPF</li>
+                        <li>✅ Redes Sociais</li>
+                        <li>✅ Localização</li>
+                        <li>✅ Relatórios PDF</li>
+                        <li>✅ Suporte por email</li>
+                    </ul>
+                    <a href="https://wa.me/5561995120797" class="btn-pricing" target="_blank">ASSINAR</a>
+                </div>
+                <div class="pricing-card popular">
+                    <div class="popular-badge">MAIS VENDIDO</div>
+                    <div class="pricing-price">R$ 197<span>/mês</span></div>
+                    <ul class="pricing-features">
+                        <li>✅ Tudo do plano básico</li>
+                        <li>✅ Bens Patrimoniais</li>
+                        <li>✅ Análise de Crédito</li>
+                        <li>✅ Dados Vazados</li>
+                        <li>✅ Suporte prioritário</li>
+                    </ul>
+                    <a href="https://wa.me/5561995120797" class="btn-pricing" target="_blank">ASSINAR</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-price">R$ 497<span>/ano</span></div>
+                    <ul class="pricing-features">
+                        <li>✅ Tudo do plano profissional</li>
+                        <li>✅ 2 meses grátis</li>
+                        <li>✅ Suporte VIP 24/7</li>
+                        <li>✅ Treinamento incluso</li>
+                        <li>✅ Prioridade nas atualizações</li>
+                    </ul>
+                    <a href="https://wa.me/5561995120797" class="btn-pricing" target="_blank">ASSINAR</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-final">
+        <div class="container">
+            <h2>Pronto para revolucionar suas investigações?</h2>
+            <p>Junte-se a mais de 500 profissionais que já utilizam o SPYNET.</p>
+            <a href="https://sentinelmonitor.onrender.com" class="btn-primary" target="_blank" style="font-size: 20px; padding: 15px 50px;">🔓 TESTE GRÁTIS POR 7 DIAS</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 SPYNET SECURITY - Sistema de Inteligência Digital</p>
+            <p style="margin-top: 10px;">📧 contato@spynet.com.br | 📞 (61) 99512-0797</p>
+        </div>
+    </footer>
+
+    <!-- Modal do vídeo -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <iframe id="demoVideo" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scroll para os links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Modal do vídeo
+        const modal = document.getElementById('videoModal');
+        const watchBtn = document.getElementById('watchVideoBtn');
+        const closeBtn = document.querySelector('.close-modal');
+        const videoIframe = document.getElementById('demoVideo');
+
+        watchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'flex';
+            // Opcional: substituir pelo seu vídeo de demonstração
+            videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0";
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                videoIframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0";
+            }
+        });
+    </script>
+</body>
+</html>
