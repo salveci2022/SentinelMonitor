@@ -6,62 +6,121 @@
     <title>SPYNET - OSINT Intelligence</title>
     <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; min-height: 100vh; }
-        .sidebar { position: fixed; left: 0; top: 0; width: 270px; height: 100%; background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%); border-right: 1px solid rgba(0,255,255,0.2); padding: 20px 0; }
-        .logo-sidebar { text-align: center; padding: 20px; border-bottom: 1px solid rgba(0,255,255,0.2); margin-bottom: 20px; }
-        .logo-sidebar img { width: 65px; height: 65px; border-radius: 15px; }
-        .logo-sidebar h2 { color: #00ffff; font-size: 20px; }
-        .nav-item { padding: 14px 24px; color: #ccc; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(0,255,255,0.1); color: #00ffff; }
-        .nav-item.active { background: rgba(0,255,255,0.15); border-left-color: #00ffff; color: #00ffff; }
-        .main-content { margin-left: 270px; padding: 20px; }
-        .header { background: rgba(10,10,26,0.9); border-radius: 15px; padding: 15px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,255,255,0.2); }
-        .header h1 { color: #00ffff; font-size: 24px; }
-        .btn-sair { background: rgba(255,68,68,0.2); color: #ff4444; border: 1px solid #ff4444; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
-        .search-section { background: rgba(10,10,26,0.9); border-radius: 15px; padding: 25px; border: 1px solid rgba(0,255,255,0.2); margin-bottom: 25px; }
-        .search-section h2 { color: #00ffff; margin-bottom: 20px; }
-        .search-box { display: flex; gap: 15px; flex-wrap: wrap; }
-        .search-box input { flex: 1; padding: 14px 18px; background: rgba(20,20,40,0.8); border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 15px; min-width: 200px; }
-        .search-box input:focus { outline: none; border-color: #00ffff; }
-        .search-box button { padding: 14px 35px; background: linear-gradient(135deg, #00aaff, #0066cc); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 20px; }
-        .tool-card { background: rgba(10,10,26,0.9); border-radius: 12px; padding: 15px; border: 1px solid rgba(0,255,255,0.2); transition: 0.3s; }
-        .tool-card:hover { transform: translateY(-3px); border-color: #00aaff; }
-        .tool-card h4 { color: #00ffff; margin-bottom: 8px; }
-        .tool-card p { color: #888; font-size: 12px; margin-bottom: 10px; }
-        .tool-card a { color: #0af; text-decoration: none; font-size: 12px; }
-        .tool-card a:hover { text-decoration: underline; }
-        .results-area { background: rgba(10,10,26,0.9); border-radius: 15px; padding: 20px; margin-top: 20px; border: 1px solid rgba(0,255,255,0.2); }
-        @media (max-width: 768px) { .sidebar { width: 70px; } .logo-sidebar h2, .nav-item span:last-child { display: none; } .main-content { margin-left: 70px; } }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;width:270px;height:100%;background:linear-gradient(180deg,#0a0a1a,#0d0d1a);border-right:1px solid rgba(0,255,255,0.2);padding:20px 0}
+        .logo-sidebar{text-align:center;padding:20px;border-bottom:1px solid rgba(0,255,255,0.2);margin-bottom:20px}
+        .logo-sidebar img{width:65px;height:65px;border-radius:15px}
+        .logo-sidebar h2{color:#00ffff;font-size:20px}
+        .nav-item{padding:14px 24px;color:#ccc;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:12px;border-left:3px solid transparent;text-decoration:none}
+        .nav-item:hover{background:rgba(0,255,255,0.1);color:#00ffff}
+        .nav-item.active{background:rgba(0,255,255,0.15);border-left-color:#00ffff;color:#00ffff}
+        .main-content{margin-left:270px;padding:20px}
+        .header{background:rgba(10,10,26,0.9);border-radius:15px;padding:15px 25px;margin-bottom:25px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(0,255,255,0.2)}
+        .header h1{color:#00ffff;font-size:24px}
+        .btn-sair{background:rgba(255,68,68,0.2);color:#ff4444;border:1px solid #ff4444;padding:8px 16px;border-radius:8px;cursor:pointer;transition:0.3s}
+        .btn-sair:hover{background:#ff4444;color:white}
+        .section{background:rgba(10,10,26,0.9);border-radius:15px;padding:25px;border:1px solid rgba(0,255,255,0.2);margin-bottom:25px}
+        .section h2{color:#00ffff;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+        .search-box{display:flex;gap:15px;flex-wrap:wrap}
+        .search-box input{flex:1;padding:14px 18px;background:rgba(20,20,40,0.8);border:1px solid #333;border-radius:12px;color:#fff;font-size:15px;min-width:200px;transition:0.3s}
+        .search-box input:focus{outline:none;border-color:#00ffff;box-shadow:0 0 10px rgba(0,255,255,0.2)}
+        .search-box button{padding:14px 35px;background:linear-gradient(135deg,#00aaff,#0066cc);color:white;border:none;border-radius:12px;cursor:pointer;font-weight:bold;transition:0.3s}
+        .search-box button:hover{background:linear-gradient(135deg,#00ccff,#0088ee);transform:translateY(-2px)}
+        .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+        .tool-card{background:rgba(15,15,30,0.9);border-radius:12px;padding:15px;border:1px solid rgba(0,255,255,0.15);transition:0.3s}
+        .tool-card:hover{transform:translateY(-3px);border-color:#00aaff;box-shadow:0 5px 20px rgba(0,170,255,0.1)}
+        .tool-card h4{color:#00ffff;margin-bottom:6px;font-size:14px}
+        .tool-card p{color:#666;font-size:11px;margin-bottom:8px}
+        .tool-card a{color:#0af;text-decoration:none;font-size:12px;font-weight:500}
+        .results-area{background:rgba(10,10,26,0.9);border-radius:15px;padding:20px;margin-top:20px;border:1px solid rgba(0,255,255,0.2)}
+
+        /* FBI */
+        .fbi-panel{background:rgba(5,5,20,0.95);border-radius:15px;padding:25px;border:1px solid rgba(0,255,255,0.25);margin-bottom:25px;box-shadow:0 0 30px rgba(0,100,255,0.05)}
+        .fbi-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(0,255,255,0.15)}
+        .fbi-badge{background:linear-gradient(135deg,#00aaff,#0066cc);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:bold;letter-spacing:1px}
+        .fbi-title{color:#00ffff;font-size:18px;font-weight:bold}
+        .fbi-sub{color:#555;font-size:12px;margin-left:auto}
+        .fbi-chat{background:#030310;border-radius:12px;padding:16px;height:340px;overflow-y:auto;margin-bottom:15px;border:1px solid rgba(0,255,255,0.1)}
+        .msg-user{background:rgba(0,170,255,0.1);border-left:2px solid #0af;border-radius:8px;padding:10px 14px;margin-bottom:12px}
+        .msg-user .who{color:#0af;font-size:11px;font-weight:bold;margin-bottom:4px}
+        .msg-bot{background:rgba(0,255,204,0.05);border-left:2px solid #00ffcc;border-radius:8px;padding:10px 14px;margin-bottom:12px}
+        .msg-bot .who{color:#00ffcc;font-size:11px;font-weight:bold;margin-bottom:4px}
+        .msg-text{color:#ddd;font-size:13px;line-height:1.6}
+        .fbi-input-row{display:flex;gap:10px}
+        .fbi-input{flex:1;padding:13px 16px;background:rgba(10,10,30,0.9);border:1px solid rgba(0,170,255,0.3);border-radius:12px;color:#fff;font-size:14px;transition:0.3s}
+        .fbi-input:focus{outline:none;border-color:#00ffff;box-shadow:0 0 10px rgba(0,255,255,0.15)}
+        .fbi-send{padding:13px 24px;background:linear-gradient(135deg,#00aaff,#0066cc);border:none;border-radius:12px;color:white;font-weight:bold;cursor:pointer;font-size:14px;transition:0.3s;white-space:nowrap}
+        .fbi-send:hover{background:linear-gradient(135deg,#00ccff,#0088ee);transform:translateY(-1px)}
+        .fbi-send:disabled{background:#333;cursor:not-allowed;transform:none}
+        .quick-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+        .qbtn{padding:5px 12px;background:rgba(0,170,255,0.1);border:1px solid rgba(0,170,255,0.25);border-radius:20px;color:#0af;font-size:11px;cursor:pointer;transition:0.2s}
+        .qbtn:hover{background:rgba(0,170,255,0.2);border-color:#0af}
+        .typing{color:#555;font-size:12px;font-style:italic;padding:8px 0}
+
+        @media(max-width:768px){.sidebar{width:70px}.logo-sidebar h2,.nav-item span:last-child{display:none}.main-content{margin-left:70px}}
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo-sidebar">
-            <img src="/static/logo.png" alt="SPYNET" onerror="this.src='https://placehold.co/65x65/0a0a1a/00ffff?text=SN'">
-            <h2>SPYNET</h2>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/dashboard'"><span>🏠</span><span>Dashboard</span></div>
-        <div class="nav-item" onclick="window.location.href='/sentinel'"><span>🛡️</span><span>Sentinel Monitor</span></div>
-        <div class="nav-item active" onclick="window.location.href='/osint'"><span>🔍</span><span>OSINT IA</span></div>
-        <div class="nav-item" onclick="window.location.href='/casos'"><span>📋</span><span>Casos</span></div>
+<div class="sidebar">
+    <div class="logo-sidebar">
+        <img src="/static/logo.png" alt="SPYNET" onerror="this.src='https://placehold.co/65x65/0a0a1a/00ffff?text=SN'">
+        <h2>SPYNET</h2>
+    </div>
+    <a class="nav-item" href="/dashboard"><span>🏠</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/sentinel"><span>🛡️</span><span>Sentinel Monitor</span></a>
+    <a class="nav-item active" href="/osint"><span>🔍</span><span>OSINT IA</span></a>
+    <a class="nav-item" href="/casos"><span>📋</span><span>Casos</span></a>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>🔍 OSINT Intelligence Platform</h1>
+        <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
     </div>
 
-    <div class="main-content">
-        <div class="header">
-            <h1>🔍 OSINT Intelligence Platform</h1>
-            <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
+    <!-- FBI IA -->
+    <div class="fbi-panel">
+        <div class="fbi-header">
+            <span class="fbi-badge">🤖 FBI</span>
+            <span class="fbi-title">Ferramenta de Busca Inteligente</span>
+            <span class="fbi-sub">IA especialista em OSINT e investigação digital</span>
         </div>
-
-        <div class="search-section">
-            <h2>🔎 Busca Rápida</h2>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Digite nome, e-mail, telefone ou usuário...">
-                <button onclick="buscar()">🔍 BUSCAR</button>
-            </div>
+        <div class="fbi-chat" id="fbiChat"></div>
+        <div class="fbi-input-row">
+            <input type="text" class="fbi-input" id="fbiInput"
+                   placeholder="Pergunte sobre OSINT, investigação, técnicas, casos..."
+                   onkeydown="if(event.key==='Enter' && !event.shiftKey) enviarFBI()">
+            <button class="fbi-send" id="fbiBtnEnviar" onclick="enviarFBI()">Perguntar →</button>
         </div>
+        <div class="quick-btns">
+            <button class="qbtn" onclick="perguntaRapida('Como rastrear um perfil falso no Instagram?')">📷 Perfil falso Instagram</button>
+            <button class="qbtn" onclick="perguntaRapida('Como investigar uma pessoa usando apenas o nome completo?')">👤 Investigar por nome</button>
+            <button class="qbtn" onclick="perguntaRapida('Quais Google Dorks usar para encontrar informações de uma pessoa?')">🔍 Google Dorks</button>
+            <button class="qbtn" onclick="perguntaRapida('Como verificar se uma foto foi manipulada ou é falsa?')">🖼️ Foto falsa</button>
+            <button class="qbtn" onclick="perguntaRapida('Como localizar o endereço de uma pessoa pelas redes sociais?')">📍 Localizar pessoa</button>
+            <button class="qbtn" onclick="perguntaRapida('Como investigar infidelidade de forma legal?')">💑 Investigar infidelidade</button>
+            <button class="qbtn" onclick="perguntaRapida('Como encontrar perfis de uma pessoa em todas as redes sociais?')">🌐 Mapear redes sociais</button>
+            <button class="qbtn" onclick="perguntaRapida('O que é OSINT e como usar na investigação particular?')">📚 O que é OSINT</button>
+        </div>
+    </div>
 
+    <!-- Busca Rápida -->
+    <div class="section">
+        <h2>🔎 Busca Rápida em Fontes</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Digite nome, e-mail, telefone ou usuário...">
+            <button onclick="buscar()">🔍 BUSCAR</button>
+        </div>
+        <div class="results-area" id="resultsArea" style="margin-top:15px;display:none">
+            <h4 style="color:#00ffff;margin-bottom:12px">📋 Abrir nas fontes</h4>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <!-- Ferramentas -->
+    <div class="section">
+        <h2>🛠️ Ferramentas OSINT</h2>
         <div class="tools-grid">
             <div class="tool-card"><h4>🌐 Google</h4><p>Mecanismo de busca principal</p><a href="https://www.google.com" target="_blank">Acessar →</a></div>
             <div class="tool-card"><h4>📘 Facebook</h4><p>Busca de perfis e informações</p><a href="https://www.facebook.com" target="_blank">Acessar →</a></div>
@@ -76,36 +135,137 @@
             <div class="tool-card"><h4>🤖 Reddit</h4><p>Comunidades e discussões</p><a href="https://www.reddit.com" target="_blank">Acessar →</a></div>
             <div class="tool-card"><h4>📱 Telegram</h4><p>Canais e grupos</p><a href="https://web.telegram.org" target="_blank">Acessar →</a></div>
         </div>
-
-        <div class="results-area" id="resultsArea">
-            <h4 style="color:#00ffff; margin-bottom:10px;">📋 Resultados</h4>
-            <div id="resultsContent" style="color:#888;">Digite algo no campo de busca acima e clique em "BUSCAR" para iniciar.</div>
-        </div>
     </div>
+</div>
 
-    <script>
-        function buscar() {
-            const query = document.getElementById('searchInput').value.trim();
-            const resultsDiv = document.getElementById('resultsContent');
-            if (!query) { resultsDiv.innerHTML = '<span style="color:#ff4444;">⚠️ Digite algo para buscar</span>'; return; }
+<script>
+// ================================
+// FBI — IA OSINT
+// ================================
+const FBI_SYSTEM = `Você é o FBI (Ferramenta de Busca Inteligente), uma IA especialista em OSINT e investigação digital criada pela SPYNET Security. Seu conhecimento inclui:
 
-            const encoded = encodeURIComponent(query);
-            resultsDiv.innerHTML = `
-                <p style="color:#ccc; margin-bottom:15px;">🔍 Buscando por: <strong style="color:#0af;">${query}</strong></p>
-                <div style="display:flex; flex-wrap:wrap; gap:12px;">
-                    <a href="https://www.google.com/search?q=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">🌐 Google</a>
-                    <a href="https://www.facebook.com/search/top?q=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">📘 Facebook</a>
-                    <a href="https://twitter.com/search?q=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">🐦 Twitter</a>
-                    <a href="https://www.linkedin.com/search/results/all/?keywords=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">💼 LinkedIn</a>
-                    <a href="https://github.com/search?q=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">🐙 GitHub</a>
-                    <a href="https://www.jusbrasil.com.br/busca?q=${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">📜 JusBrasil</a>
-                    <a href="https://haveibeenpwned.com/account/${encoded}" target="_blank" style="color:#0af; text-decoration:none; background:rgba(0,170,255,0.1); padding:8px 14px; border-radius:8px; border:1px solid rgba(0,170,255,0.3);">🔐 HaveIBeenPwned</a>
-                </div>
-                <p style="color:#666; font-size:12px; margin-top:15px;">💡 Clique nos botões acima para abrir as buscas em novas abas.</p>
-            `;
-        }
+- Técnicas avançadas de OSINT (Open Source Intelligence)
+- Investigação em redes sociais (Instagram, Facebook, Twitter/X, LinkedIn, TikTok)
+- Google Dorks e buscas avançadas
+- Rastreamento e identificação de perfis digitais
+- Análise de metadados de imagens e documentos
+- Verificação de autenticidade de fotos e vídeos (deepfakes)
+- Investigação de CPF, CNPJ, endereços e telefones (fontes públicas)
+- Localização de pessoas por redes sociais
+- Investigação de infidelidade conjugal de forma legal
+- Técnicas de vigilância digital
+- LGPD e aspectos legais da investigação particular no Brasil
+- Uso de ferramentas como Sherlock, Maigret, Maltego, theHarvester
+- Análise de EXIF de imagens
+- Investigação na dark web (fontes abertas)
+- Como elaborar relatórios de investigação profissionais
 
-        document.getElementById('searchInput').addEventListener('keypress', e => { if (e.key === 'Enter') buscar(); });
-    </script>
+Responda sempre em português brasileiro, de forma profissional, direta e prática. Dê exemplos concretos e técnicas aplicáveis. Você orienta sobre técnicas legais — nunca auxilia em atividades ilegais.`;
+
+let fbiHistorico = [];
+
+function addMsg(role, texto) {
+    const chat = document.getElementById('fbiChat');
+    const div = document.createElement('div');
+    div.className = role === 'user' ? 'msg-user' : 'msg-bot';
+    const who = role === 'user' ? '👤 Você' : '🤖 FBI — SPYNET Intelligence';
+    div.innerHTML = '<div class="who">' + who + '</div><div class="msg-text">' + texto.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</div>';
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function addTyping() {
+    const chat = document.getElementById('fbiChat');
+    const div = document.createElement('div');
+    div.id = 'fbi-typing';
+    div.className = 'msg-bot';
+    div.innerHTML = '<div class="who">🤖 FBI</div><div class="typing">Analisando e processando...</div>';
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+    const el = document.getElementById('fbi-typing');
+    if (el) el.remove();
+}
+
+async function enviarFBI() {
+    const input = document.getElementById('fbiInput');
+    const btn = document.getElementById('fbiBtnEnviar');
+    const texto = input.value.trim();
+    if (!texto || btn.disabled) return;
+    input.value = '';
+    btn.disabled = true;
+    btn.textContent = '...';
+    addMsg('user', texto);
+    fbiHistorico.push({role: 'user', content: texto});
+    addTyping();
+    try {
+        const res = await fetch('/api/fbi', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({mensagem: texto, historico: fbiHistorico.slice(-10)})
+        });
+        const d = await res.json();
+        removeTyping();
+        const resposta = d.resposta || 'Erro ao obter resposta.';
+        addMsg('assistant', resposta);
+        fbiHistorico.push({role: 'assistant', content: resposta});
+    } catch(e) {
+        removeTyping();
+        addMsg('assistant', 'Erro de conexão com o servidor FBI. Verifique se o sistema está online.');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Perguntar →';
+}
+
+function perguntaRapida(q) {
+    document.getElementById('fbiInput').value = q;
+    enviarFBI();
+}
+
+// Boas-vindas
+addMsg('assistant', `Olá! Sou o **FBI** — Ferramenta de Busca Inteligente da **SPYNET Security**.
+
+Sou especialista em OSINT e investigação digital. Posso ajudar com:
+
+• 🔍 Investigação em redes sociais
+• 🌐 Google Dorks e buscas avançadas
+• 👤 Localização e identificação de pessoas
+• 🖼️ Verificação de fotos e deepfakes
+• 📋 Elaboração de relatórios de investigação
+• ⚖️ Aspectos legais da investigação no Brasil
+
+Use os botões abaixo para perguntas rápidas ou escreva sua dúvida. Como posso ajudar?`);
+
+// ================================
+// BUSCA RÁPIDA
+// ================================
+function buscar() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+    const encoded = encodeURIComponent(query);
+    const area = document.getElementById('resultsArea');
+    const content = document.getElementById('resultsContent');
+    area.style.display = 'block';
+    const links = [
+        {icon:'🌐', label:'Google', url:`https://www.google.com/search?q=${encoded}`},
+        {icon:'📘', label:'Facebook', url:`https://www.facebook.com/search/top?q=${encoded}`},
+        {icon:'📷', label:'Instagram', url:`https://www.instagram.com/${query.replace('@','')}`},
+        {icon:'🐦', label:'Twitter', url:`https://twitter.com/search?q=${encoded}`},
+        {icon:'💼', label:'LinkedIn', url:`https://www.linkedin.com/search/results/all/?keywords=${encoded}`},
+        {icon:'🐙', label:'GitHub', url:`https://github.com/search?q=${encoded}`},
+        {icon:'📜', label:'JusBrasil', url:`https://www.jusbrasil.com.br/busca?q=${encoded}`},
+        {icon:'🔐', label:'HaveIBeenPwned', url:`https://haveibeenpwned.com/account/${encoded}`},
+        {icon:'📺', label:'YouTube', url:`https://www.youtube.com/results?search_query=${encoded}`},
+    ];
+    content.innerHTML = `<p style="color:#ccc;margin-bottom:12px">🔍 Resultados para: <strong style="color:#0af">${query}</strong></p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">` +
+    links.map(l => `<a href="${l.url}" target="_blank" rel="noopener" style="color:#0af;text-decoration:none;background:rgba(0,170,255,0.1);padding:8px 16px;border-radius:8px;border:1px solid rgba(0,170,255,0.25);font-size:13px;transition:0.2s" onmouseover="this.style.background='rgba(0,170,255,0.2)'" onmouseout="this.style.background='rgba(0,170,255,0.1)'">${l.icon} ${l.label}</a>`).join('') +
+    '</div><p style="color:#444;font-size:11px;margin-top:12px">💡 Clique para abrir em nova aba</p>';
+}
+
+document.getElementById('searchInput').addEventListener('keypress', e => { if(e.key === 'Enter') buscar(); });
+</script>
 </body>
 </html>
