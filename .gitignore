@@ -1,24 +1,49 @@
-# Banco de dados
-*.db
-*.sqlite
+# ============================================
+# SPYNET — ARQUIVOS QUE NAO VÃO PARA O GITHUB
+# ============================================
+
+# Dados sensiveis de clientes (historico local)
+data/chaves_geradas.json
+
+# Dados de casos investigativos (privado)
+data/casos.json
+data/casos.json.tmp
+
+# Configuracoes com tokens e credenciais
+config.py
+.env
+*.env
+
+# Logs do sistema
+*.log
+logs/
+SystemData/
 
 # Python
 __pycache__/
 *.py[cod]
 *.so
+*.pyc
 
 # Ambiente virtual
 venv/
 env/
-.env
+.venv/
+
+# Banco de dados
+*.db
+*.sqlite
 
 # IDE
 .vscode/
 .idea/
+*.swp
 
-# Logs
-*.log
-
-# Backup
+# Backup e temporarios
 *.bak
 *.backup
+*.tmp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

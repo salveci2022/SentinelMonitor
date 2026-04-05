@@ -1,22 +1,155 @@
-SPYNET INTELLIGENCE SYSTEM - LICENÇA DE USO
+SPYNET INTELLIGENCE SYSTEM
+CONTRATO DE LICENÇA DE USO DE SOFTWARE (EULA)
 
-Copyright (c) 2026 SPYNET Security
+================================================================================
 
-Esta licença é um contrato legal entre você e o proprietário do sistema.
+Copyright (c) 2025-2026 SPYNET TECNOLOGIA FORENSE & SOLUÇÕES DIGITAIS LTDA
+CNPJ: 64.000.808/0001-51
+Nome Fantasia: SPYNET SECURITY
+Natureza Jurídica: Sociedade Empresária Limitada (206-2)
+Endereço: Q QR 210 Conjunto E, Lote 10, Bairro Santa Maria, Brasília-DF, CEP 72.510-405
+E-mail: contato@peterlima.com.br
+Situação Cadastral: ATIVA — desde 10/12/2025
 
-1. PROIBIÇÕES:
-   - Não é permitido copiar, modificar ou distribuir o código fonte
-   - Não é permitido remover marcas d'água ou identificações
-   - Não é permitido revender sem autorização
-   - Não é permitido usar em sistemas concorrentes
+================================================================================
 
-2. DIREITOS DO CLIENTE:
-   - Uso comercial autorizado
-   - Instalação em até 3 servidores
-   - Suporte por 30 dias
+LEIA ESTE CONTRATO ATENTAMENTE ANTES DE INSTALAR, ACESSAR OU UTILIZAR O SOFTWARE.
+AO UTILIZAR O SISTEMA, VOCÊ CONCORDA COM TODOS OS TERMOS ABAIXO.
 
-3. PENALIDADES:
-   - Violação da licença: R$ 50.000,00 por ocorrência
-   - Uso não autorizado: Ação judicial imediata
+================================================================================
 
-Contato: [seu-email]
+1. OBJETO DA LICENÇA
+
+   Este Contrato de Licença de Uso de Software ("Contrato") é celebrado entre
+   a SPYNET TECNOLOGIA FORENSE & SOLUÇÕES DIGITAIS LTDA ("Licenciante") e o
+   usuário final ("Licenciado"), pessoa física ou jurídica, que adquiriu o
+   direito de uso do sistema SPYNET Intelligence System ("Software").
+
+   O Software é protegido pela Lei nº 9.609/1998 (Lei de Software), pela
+   Lei nº 9.610/1998 (Lei de Direitos Autorais) e pelos tratados internacionais
+   de propriedade intelectual dos quais o Brasil é signatário.
+
+================================================================================
+
+2. DIREITOS CONCEDIDOS AO LICENCIADO
+
+   Mediante o pagamento da licença, o Licenciado recebe os seguintes direitos
+   não exclusivos e intransferíveis:
+
+   a) Uso do Software para fins comerciais próprios;
+   b) Instalação em até 3 (três) servidores ou instâncias simultâneas;
+   c) Acesso a atualizações de segurança durante o período da licença;
+   d) Suporte técnico por 30 (trinta) dias a partir da ativação.
+
+================================================================================
+
+3. RESTRIÇÕES E PROIBIÇÕES
+
+   É expressamente vedado ao Licenciado, sem prévia autorização escrita
+   da Licenciante:
+
+   a) Copiar, reproduzir ou distribuir o código-fonte, no todo ou em parte;
+   b) Modificar, adaptar, traduzir ou criar obras derivadas do Software;
+   c) Remover, alterar ou ocultar avisos de direitos autorais, marcas ou
+      identificações presentes no Software;
+   d) Sublicenciar, alugar, arrendar, vender ou transferir a licença a terceiros;
+   e) Utilizar o Software em sistemas ou produtos concorrentes;
+   f) Realizar engenharia reversa, descompilação ou desmontagem do Software;
+   g) Utilizar o Software para fins ilícitos, antiéticos ou que violem
+      a legislação brasileira vigente.
+
+================================================================================
+
+4. PROTEÇÃO DE DADOS E LGPD
+
+   O Software processa dados pessoais de terceiros no contexto de investigações
+   profissionais. O Licenciado, na condição de Controlador de Dados nos termos
+   da Lei nº 13.709/2018 (Lei Geral de Proteção de Dados — LGPD), assume
+   integralmente as seguintes responsabilidades:
+
+   a) Garantir que o uso do Software esteja amparado em base legal prevista
+      no Art. 7º da LGPD (consentimento, legítimo interesse, exercício regular
+      de direitos, entre outras);
+   b) Tratar os dados coletados exclusivamente para as finalidades declaradas
+      ao titular dos dados;
+   c) Adotar medidas técnicas e administrativas de segurança adequadas;
+   d) Responder civil e penalmente por qualquer uso indevido dos dados
+      processados por meio do Software;
+   e) Isentar a Licenciante de qualquer responsabilidade decorrente do uso
+      irregular ou ilícito dos dados pelo Licenciado.
+
+   A Licenciante não se responsabiliza pelo conteúdo dos dados inseridos ou
+   coletados pelo Licenciado através do Software.
+
+================================================================================
+
+5. PROPRIEDADE INTELECTUAL
+
+   O Software, incluindo seu código-fonte, interfaces, documentação, logotipos,
+   marcas e demais elementos, é de propriedade exclusiva da SPYNET TECNOLOGIA
+   FORENSE & SOLUÇÕES DIGITAIS LTDA, protegidos nos termos da Lei nº 9.609/1998
+   e Lei nº 9.610/1998.
+
+   Esta licença não transfere ao Licenciado qualquer direito de propriedade
+   intelectual sobre o Software.
+
+================================================================================
+
+6. VIGÊNCIA E RESCISÃO
+
+   a) A licença entra em vigor na data de ativação da chave de acesso e
+      permanece válida pelo período contratado (mensal, trimestral, anual
+      ou vitalício);
+   b) A Licenciante poderá rescindir este Contrato imediatamente, sem aviso
+      prévio, em caso de violação de qualquer cláusula;
+   c) Com a rescisão, o Licenciado deverá cessar imediatamente todo o uso
+      do Software e destruir todas as cópias em sua posse.
+
+================================================================================
+
+7. PENALIDADES POR VIOLAÇÃO
+
+   A violação de qualquer cláusula deste Contrato sujeitará o Licenciado a:
+
+   a) Rescisão imediata da licença, sem direito a reembolso;
+   b) Indenização por danos materiais e morais, nos termos do Art. 102 e
+      seguintes da Lei nº 9.610/1998 (Lei de Direitos Autorais);
+   c) Multa contratual de R$ 50.000,00 (cinquenta mil reais) por ocorrência,
+      sem prejuízo das demais sanções civis e penais cabíveis;
+   d) Medidas cautelares judiciais para cessação imediata do uso indevido.
+
+================================================================================
+
+8. LIMITAÇÃO DE RESPONSABILIDADE
+
+   O Software é fornecido "no estado em que se encontra". A Licenciante não
+   garante que o Software seja isento de erros ou interrupções. Em nenhuma
+   hipótese a Licenciante será responsável por danos indiretos, incidentais,
+   especiais ou consequentes decorrentes do uso ou da impossibilidade de uso
+   do Software, inclusive perda de dados ou lucros cessantes.
+
+================================================================================
+
+9. FORO E LEI APLICÁVEL
+
+   Este Contrato é regido pelas leis da República Federativa do Brasil.
+   As partes elegem o Foro da Comarca de Brasília, Distrito Federal, como
+   competente para dirimir quaisquer controvérsias decorrentes deste Contrato,
+   renunciando a qualquer outro, por mais privilegiado que seja.
+
+================================================================================
+
+10. CONTATO E SUPORTE
+
+    SPYNET TECNOLOGIA FORENSE & SOLUÇÕES DIGITAIS LTDA
+    CNPJ: 64.000.808/0001-51
+    Brasília-DF — CEP 72.510-405
+    E-mail: contato@peterlima.com.br
+
+================================================================================
+
+Ao utilizar o Software, o Licenciado declara ter lido, compreendido e
+concordado integralmente com os termos deste Contrato.
+
+SPYNET TECNOLOGIA FORENSE & SOLUÇÕES DIGITAIS LTDA
+© 2025-2026 — Todos os direitos reservados.
